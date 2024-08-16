@@ -9,6 +9,7 @@ from url import (
     gb6_ai_url,
 )
 from parser import Parser
+from utils import *
 
 
 class Geekbench6:
@@ -33,7 +34,8 @@ class Geekbench6:
         self,
         model_name:str,
         start_page:int,
-        end_page:int
+        end_page:int,
+        delay=float
         ) -> None:
         
         # start_page 가 end_page 까지 반복.
@@ -52,22 +54,29 @@ class Geekbench6:
                 ) as response:
                 
                 text = await response.text()
-                self.parser.cpu_parse(text)
+                result = self.parser.cpu_parse(
+                    html=text, 
+                    page=cpu_payload["page"]
+                    )
 
+                indent_print(text=result)
+                
                 # 비동기적으로 대기
-                await asyncio.sleep(3)
+                await asyncio.sleep(delay=delay)
                 
     
     # 세션 종료
     async def session_close(self):
         await self.session.close()
 
+
 async def run():
     gb6 = Geekbench6()
     await gb6.cpu_fetch(
         start_page=1,
-        end_page=1,
-        model_name="sm-s928n"
+        end_page=2,
+        model_name="sm-s928n",
+        delay=2
     )
     
     

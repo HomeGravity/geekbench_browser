@@ -1,24 +1,21 @@
 from bs4 import BeautifulSoup
-from collections import OrderedDict
-
-def date_parse(text):
-    from datetime import datetime
-    import re
-    
-    # 생성일자 텍스트 변경
-    date_string = re.search(r'(\b\w{3} \d{1,2}, \d{4}\b)', text).group()
-    date_strptime = datetime.strptime(date_string, "%b %d, %Y")
-    return f"{date_strptime.year}-{date_strptime.month}-{date_strptime.day}"
+from utils import *
 
 class Parser:
     def __init__(self) -> None:
-        gb6_data = OrderedDict()
-    
-    def cpu_parse(self, html):
+        # 최종 데이터 저장
+        self.gb6_all_data = dict()
+        
+        # 데이터 접근 구분 키
+        self.gb6_data_access_key = {
+            "cpu": "GB6 CPU Results"
+        }
+        
+    def cpu_parse(self, html:str, page:str):
         soup = BeautifulSoup(markup=html, features="lxml")
         
-        # 임시 저장
-        gb6_temp = OrderedDict()
+        # 데이터 임시 저장
+        gb6_cpu_data = dict()
         
         # 열(col) 개수만큼 반복합니다.
         for index, element in enumerate(
@@ -86,16 +83,35 @@ class Parser:
                 selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div.col-12.col-lg-4 > a" % index
             )["href"] # 여백 제거
             
-            print(system_sub_title)
-            print(model_name)
-            print(cpu_info)
-            print(uploaded_sub_title)
-            print(uploaded_time, date_parse(uploaded_time))
-            print(platform_sub_title)
-            print(platform_name)
-            print(single_core_sub_title)
-            print(single_core_score)
-            print(multi_core_sub_title)
-            print(multi_core_score)
-            print(gb6_data_url) 
-            print()
+            
+            # 중복 방지를 위해 고유값인 url을 사용합니다.
+            if gb6_data_url not in gb6_cpu_data:
+                gb6_cpu_data[gb6_data_url] = {
+                    system_sub_title: {
+                        "model name": model_name,
+                        "cpu info": cpu_info
+                    },
+                    uploaded_sub_title: {
+                        "default date": uploaded_time,
+                        "parsed date": date_parse(text=uploaded_time)
+                    },
+                    platform_sub_title: platform_name,
+                    single_core_sub_title: single_core_score,
+                    multi_core_sub_title: multi_core_score
+                }
+                
+        
+        # page 마다 반복이 끝난후에 추가
+        page_and_data = {page: gb6_cpu_data}
+        if self.gb6_data_access_key["cpu"] not in self.gb6_all_data:
+            self.gb6_all_data[self.gb6_data_access_key["cpu"]] = []
+            self.gb6_all_data[self.gb6_data_access_key["cpu"]].append(page_and_data)
+        
+        else:
+            self.gb6_all_data[self.gb6_data_access_key["cpu"]].append(page_and_data)
+        
+        return page_and_data
+
+    # 모든 데이터를 반환합니다.
+    def return_all_data(self):
+        return self.gb6_all_data
