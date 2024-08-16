@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from collections import OrderedDict
 
 def date_parse(text):
     from datetime import datetime
@@ -11,13 +12,13 @@ def date_parse(text):
 
 class Parser:
     def __init__(self) -> None:
-        gb6_data = dict()
+        gb6_data = OrderedDict()
     
     def cpu_parse(self, html):
         soup = BeautifulSoup(markup=html, features="lxml")
         
         # 임시 저장
-        gb6_temp = dict()
+        gb6_temp = OrderedDict()
         
         # 열(col) 개수만큼 반복합니다.
         for index, element in enumerate(
@@ -28,7 +29,7 @@ class Parser:
             # 시스템 서브 타이틀
             system_sub_title = element.select_one(
                 selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div.col-12.col-lg-4 > span.list-col-subtitle" % index
-                ).get_text(strip=True) # 여백 제거
+            ).get_text(strip=True) # 여백 제거
             
             # 모델 이름
             model_name = element.select_one(
@@ -81,7 +82,7 @@ class Parser:
             ).get_text(strip=True) # 여백 제거
 
             # 링크
-            gb_data_url = "https://browser.geekbench.com" + element.select_one(
+            gb6_data_url = "https://browser.geekbench.com" + element.select_one(
                 selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div.col-12.col-lg-4 > a" % index
             )["href"] # 여백 제거
             
@@ -96,5 +97,5 @@ class Parser:
             print(single_core_score)
             print(multi_core_sub_title)
             print(multi_core_score)
-            print(gb_data_url) 
+            print(gb6_data_url) 
             print()
