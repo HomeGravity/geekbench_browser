@@ -1,25 +1,24 @@
 from bs4 import BeautifulSoup
+from collections import defaultdict
+
 from utils import *
 
 class Parser:
     def __init__(self) -> None:
-        # 최종 데이터 저장
-        self.gb6_all_data = dict()
-        
-        # 데이터 접근 구분 키
-        self.gb6_data_access_key = {
-            "cpu": "GB6 CPU Results",
-            "gpu": "GB6 GPU Results",
-            "ml": "GB6 ML Results",
-            "ai": "GB6 AI Results"
-        }
+        # 모든 데이터 저장
+        self.gb6_all_data = defaultdict(dict)
+        # 단일 데이터 저장
+        self.cpu_data = defaultdict(dict)
+        self.gpu_data = defaultdict(dict)
+        self.ml_data = defaultdict(dict)
+        self.ai_data = defaultdict(dict)
     
     # cpu 부분 데이터
     def cpu_parse(self, html:str, page:str):
         soup = BeautifulSoup(markup=html, features="lxml")
         
-        # 데이터 저장
-        gb6_cpu_data = dict()
+        # 임시 사전 생성
+        cpu_data_temp = defaultdict(dict)
         
         # 열(col) 개수만큼 반복합니다.
         for index, element in enumerate(
@@ -89,8 +88,8 @@ class Parser:
             
             
             # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url not in gb6_cpu_data:
-                gb6_cpu_data[gb6_data_url] = {
+            if gb6_data_url not in cpu_data_temp:
+                cpu_data_temp[gb6_data_url] = {
                     system_sub_title: {
                         "model name": model_name,
                         "cpu info": cpu_info
@@ -105,16 +104,19 @@ class Parser:
                 }
                 
         
-        # page 마다 반복이 끝난후에 추가
-        page_and_data = {page: gb6_cpu_data}
-        if self.gb6_data_access_key["cpu"] not in self.gb6_all_data:
-            self.gb6_all_data[self.gb6_data_access_key["cpu"]] = []
-            self.gb6_all_data[self.gb6_data_access_key["cpu"]].append(page_and_data)
+
+        # 페이지에 데이터 추가
+        if page not in self.gb6_all_data["GB6 CPU Results"]:
+            self.gb6_all_data["GB6 CPU Results"][page] = cpu_data_temp
+
+        # 단일 데이터 사전에 추가
+        if page not in self.cpu_data:
+            self.cpu_data[page] = cpu_data_temp
         
-        else:
-            self.gb6_all_data[self.gb6_data_access_key["cpu"]].append(page_and_data)
         
-        return self.gb6_all_data[self.gb6_data_access_key["cpu"]]
+        return self.cpu_data
+
+
 
     # gpu 부분 데이터
     def gpu_parse(self, html:str, page:str):

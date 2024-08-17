@@ -9,18 +9,17 @@ from utils import *
 
 
 class Geekbench6:
-    def __init__(self) -> None:
+    def __init__(self, model_name:str) -> None:
         # url
         self.gb6_base_url = gb6_base_url
-        
         # 헤더
         self.gb6_headers = gb6_headers
-
         # 비동기 HTTP 객체 초기화
         self.session = aiohttp.ClientSession()
-        
         # 파싱 객체 초기화
         self.parser = Parser()
+        # 인스턴스 변수
+        self.model_name = model_name # 하나의 객체는 하나의 모델만 수집할 수 있도록 합니다.
     
     # 비동기 요청 함수
     async def _fetch(
@@ -69,7 +68,6 @@ class Geekbench6:
     # 가져오기
     async def cpu_fetch(
         self,
-        model_name:str,
         start_page:int,
         end_page:int,
         delay=float
@@ -82,21 +80,17 @@ class Geekbench6:
             search_k="v6_cpu",
             start_page=start_page,
             end_page=end_page,
-            model_name=model_name,
+            model_name=self.model_name,
             delay=delay,
             parser=self.parser.cpu_parse
             )
+        
+        # indent_print(text=text)
 
-        for list in text:
-            for key, value in list.items():
-                print(key, "page")
-                indent_print(value)
-                print()
                 
     # 가져오기
     async def gpu_fetch(
         self,
-        model_name:str,
         start_page:int,
         end_page:int,
         delay=float
@@ -109,17 +103,15 @@ class Geekbench6:
             search_k="v6_compute",
             start_page=start_page,
             end_page=end_page,
-            model_name=model_name,
+            model_name=self.model_name,
             delay=delay,
             parser=self.parser.gpu_parse
             )
 
-        indent_print(text)
 
     # 가져오기
     async def ml_fetch(
         self,
-        model_name:str,
         start_page:int,
         end_page:int,
         delay=float
@@ -132,17 +124,15 @@ class Geekbench6:
             search_k="ml_inference",
             start_page=start_page,
             end_page=end_page,
-            model_name=model_name,
+            model_name=self.model_name,
             delay=delay,
             parser=self.parser.ml_parse
             )
         
-        indent_print(text)
         
     # 가져오기
     async def ai_fetch(
         self,
-        model_name:str,
         start_page:int,
         end_page:int,
         delay=float
@@ -155,12 +145,13 @@ class Geekbench6:
             search_k="ai",
             start_page=start_page,
             end_page=end_page,
-            model_name=model_name,
+            model_name=self.model_name,
             delay=delay,
             parser=self.parser.ai_parse
             )
         
-        indent_print(text)
+    def all_data(self):
+        indent_print(self.parser.return_all_data())
     
     # 세션 종료
     async def session_close(self):
@@ -168,12 +159,11 @@ class Geekbench6:
 
 
 async def run():
-    gb6 = Geekbench6()
+    gb6 = Geekbench6(model_name="sm-s928n")
     await asyncio.gather(
         gb6.cpu_fetch(
             start_page=1,
             end_page=2,
-            model_name="sm-s928n",
             delay=2
         ),
         # gb6.gpu_fetch(
@@ -183,6 +173,8 @@ async def run():
         #     delay=2
         # )
     )
+    
+    
     # 세션 종료
     await gb6.session_close()
 
