@@ -104,8 +104,8 @@ class Parser:
                 }
                 
         
-
-        # 페이지에 데이터 추가
+        
+        # 모든 데이터 사전에 추가
         if page not in self.gb6_all_data["GB6 CPU Results"]:
             self.gb6_all_data["GB6 CPU Results"][page] = cpu_data_temp
 
