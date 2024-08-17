@@ -114,7 +114,7 @@ class Parser:
         else:
             self.gb6_all_data[self.gb6_data_access_key["cpu"]].append(page_and_data)
         
-        return page_and_data
+        return self.gb6_all_data[self.gb6_data_access_key["cpu"]]
 
     # gpu 부분 데이터
     def gpu_parse(self, html:str, page:str):

@@ -1,13 +1,9 @@
 import aiohttp
 import asyncio
+from typing import Callable, Any
 
 from headers import gb6_headers
-from url import (
-    gb6_cpu_url,
-    gb6_gpu_url,
-    gb6_ml_url,
-    gb6_ai_url,
-)
+from url import gb6_base_url
 from parser import Parser
 from utils import *
 
@@ -15,10 +11,7 @@ from utils import *
 class Geekbench6:
     def __init__(self) -> None:
         # url
-        self.gb6_cpu_url = gb6_cpu_url
-        self.gb6_gpu_url = gb6_gpu_url
-        self.gb6_ml_url = gb6_ml_url
-        self.gb6_ai_url = gb6_ai_url
+        self.gb6_base_url = gb6_base_url
         
         # 헤더
         self.gb6_headers = gb6_headers
@@ -28,6 +21,50 @@ class Geekbench6:
         
         # 파싱 객체 초기화
         self.parser = Parser()
+    
+    # 비동기 요청 함수
+    async def _fetch(
+        self,
+        url:str,
+        headers:str,
+        search_k:str,
+        start_page:int,
+        end_page:int,
+        model_name:str,
+        delay:float,
+        parser:Callable[[str], Any]
+        ):
+        
+        
+        # start_page 가 end_page 까지 반복.
+        for page in range(start_page, end_page + 1):
+            # 페이로드 작성
+            payload = {
+                "k": search_k,
+                "utf8": "✓",
+                "page": page,
+                "q": model_name
+            }
+            
+            async with self.session.get(
+                url=url,
+                headers=headers,
+                params=payload
+                ) as response:
+
+                text = await response.text(encoding="utf-8")
+                result = parser(
+                    html=text, 
+                    page=payload["page"]
+                    )
+
+                if check_for_last_page(text):
+                    break
+                
+                # 비동기적으로 대기
+                await asyncio.sleep(delay=delay)
+        
+        return result
 
     # 가져오기
     async def cpu_fetch(
@@ -38,33 +75,24 @@ class Geekbench6:
         delay=float
         ) -> None:
         
-        # start_page 가 end_page 까지 반복.
-        for page in range(start_page, end_page + 1):
-            # 페이로드 작성
-            cpu_payload = {
-                "utf8": "✓",
-                "page": page,
-                "q": model_name
-            }
-            
-            async with self.session.get(
-                url=self.gb6_cpu_url,
-                headers=gb6_headers,
-                params=cpu_payload
-                ) as response:
+        # 비동기 요청 보내기
+        text = await self._fetch(
+            url=self.gb6_base_url,
+            headers=self.gb6_headers,
+            search_k="v6_cpu",
+            start_page=start_page,
+            end_page=end_page,
+            model_name=model_name,
+            delay=delay,
+            parser=self.parser.cpu_parse
+            )
+
+        for list in text:
+            for key, value in list.items():
+                print(key, "page")
+                indent_print(value)
+                print()
                 
-                text = await response.text()
-                result = self.parser.cpu_parse(
-                    html=text, 
-                    page=cpu_payload["page"]
-                    )
-
-                indent_print(text=result)
-                
-                # 비동기적으로 대기
-                await asyncio.sleep(delay=delay)
-
-
     # 가져오기
     async def gpu_fetch(
         self,
@@ -73,7 +101,20 @@ class Geekbench6:
         end_page:int,
         delay=float
         ) -> None:
-        pass
+
+        # 비동기 요청 보내기
+        text = await self._fetch(
+            url=self.gb6_base_url,
+            headers=self.gb6_headers,
+            search_k="v6_compute",
+            start_page=start_page,
+            end_page=end_page,
+            model_name=model_name,
+            delay=delay,
+            parser=self.parser.gpu_parse
+            )
+
+        indent_print(text)
 
     # 가져오기
     async def ml_fetch(
@@ -83,8 +124,21 @@ class Geekbench6:
         end_page:int,
         delay=float
         ) -> None:
-        pass
-    
+
+        # 비동기 요청 보내기
+        text = await self._fetch(
+            url=self.gb6_base_url,
+            headers=self.gb6_headers,
+            search_k="ml_inference",
+            start_page=start_page,
+            end_page=end_page,
+            model_name=model_name,
+            delay=delay,
+            parser=self.parser.ml_parse
+            )
+        
+        indent_print(text)
+        
     # 가져오기
     async def ai_fetch(
         self,
@@ -93,7 +147,20 @@ class Geekbench6:
         end_page:int,
         delay=float
         ) -> None:
-        pass
+
+        # 비동기 요청 보내기
+        text = await self._fetch(
+            url=self.gb6_base_url,
+            headers=self.gb6_headers,
+            search_k="ai",
+            start_page=start_page,
+            end_page=end_page,
+            model_name=model_name,
+            delay=delay,
+            parser=self.parser.ai_parse
+            )
+        
+        indent_print(text)
     
     # 세션 종료
     async def session_close(self):
@@ -102,14 +169,20 @@ class Geekbench6:
 
 async def run():
     gb6 = Geekbench6()
-    await gb6.cpu_fetch(
-        start_page=1,
-        end_page=2,
-        model_name="sm-s928n",
-        delay=2
+    await asyncio.gather(
+        gb6.cpu_fetch(
+            start_page=1,
+            end_page=2,
+            model_name="sm-s928n",
+            delay=2
+        ),
+        # gb6.gpu_fetch(
+        #     start_page=1,
+        #     end_page=3,
+        #     model_name="sm-s918n",
+        #     delay=2
+        # )
     )
-    
-    
     # 세션 종료
     await gb6.session_close()
 
