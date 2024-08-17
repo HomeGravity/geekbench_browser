@@ -14,7 +14,7 @@ class Parser:
         self.ai_data = defaultdict(dict)
     
     # cpu 부분 데이터
-    def cpu_parse(self, html:str, page:str):
+    def cpu_parse(self, html:str, page:str) -> dict:
         soup = BeautifulSoup(markup=html, features="lxml")
         
         # 임시 사전 생성
@@ -119,15 +119,15 @@ class Parser:
 
 
     # gpu 부분 데이터
-    def gpu_parse(self, html:str, page:str):
+    def gpu_parse(self, html:str, page:str) -> dict:
         pass
     
     # ml 부분 데이터
-    def ml_parse(self, html:str, page:str):
+    def ml_parse(self, html:str, page:str) -> dict:
         pass
     
     # ai 부분 데이터
-    def ai_parse(self, html:str, page:str):
+    def ai_parse(self, html:str, page:str) -> dict:
         pass
     
 

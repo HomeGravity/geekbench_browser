@@ -1,5 +1,5 @@
 # 날짜 데이터를 구문 분석
-def date_parse(text:str):
+def date_parse(text:str) -> str:
     from datetime import datetime
     import re
     
@@ -20,7 +20,7 @@ def indent_print(text:str, indent:int=4): # indent를 4로 설정
 
 
 # 마지막 페이지 확인
-def check_for_last_page(text:str):
+def check_for_last_page(text:str) -> bool:
     from bs4 import BeautifulSoup
     import re
     

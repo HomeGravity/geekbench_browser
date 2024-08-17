@@ -32,7 +32,7 @@ class Geekbench6:
         model_name:str,
         delay:float,
         parser:Callable[[str], Any]
-        ):
+        ) -> dict:
         
         
         # start_page 가 end_page 까지 반복.
