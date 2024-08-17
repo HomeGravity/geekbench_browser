@@ -63,7 +63,37 @@ class Geekbench6:
                 
                 # 비동기적으로 대기
                 await asyncio.sleep(delay=delay)
-                
+
+
+    # 가져오기
+    async def gpu_fetch(
+        self,
+        model_name:str,
+        start_page:int,
+        end_page:int,
+        delay=float
+        ) -> None:
+        pass
+
+    # 가져오기
+    async def ml_fetch(
+        self,
+        model_name:str,
+        start_page:int,
+        end_page:int,
+        delay=float
+        ) -> None:
+        pass
+    
+    # 가져오기
+    async def ai_fetch(
+        self,
+        model_name:str,
+        start_page:int,
+        end_page:int,
+        delay=float
+        ) -> None:
+        pass
     
     # 세션 종료
     async def session_close(self):

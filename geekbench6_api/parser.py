@@ -8,13 +8,17 @@ class Parser:
         
         # 데이터 접근 구분 키
         self.gb6_data_access_key = {
-            "cpu": "GB6 CPU Results"
+            "cpu": "GB6 CPU Results",
+            "gpu": "GB6 GPU Results",
+            "ml": "GB6 ML Results",
+            "ai": "GB6 AI Results"
         }
-        
+    
+    # cpu 부분 데이터
     def cpu_parse(self, html:str, page:str):
         soup = BeautifulSoup(markup=html, features="lxml")
         
-        # 데이터 임시 저장
+        # 데이터 저장
         gb6_cpu_data = dict()
         
         # 열(col) 개수만큼 반복합니다.
@@ -111,6 +115,19 @@ class Parser:
             self.gb6_all_data[self.gb6_data_access_key["cpu"]].append(page_and_data)
         
         return page_and_data
+
+    # gpu 부분 데이터
+    def gpu_parse(self, html:str, page:str):
+        pass
+    
+    # ml 부분 데이터
+    def ml_parse(self, html:str, page:str):
+        pass
+    
+    # ai 부분 데이터
+    def ai_parse(self, html:str, page:str):
+        pass
+    
 
     # 모든 데이터를 반환합니다.
     def return_all_data(self):
