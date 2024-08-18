@@ -60,16 +60,16 @@ def gpu_parse(element:str, index:int) -> str:
     )["href"]
     
     return (
-        system_sub_title,
-        model_name,
-        cpu_info,
-        uploaded_sub_title,
-        uploaded_time,
-        platform_sub_title,
-        platform_name,
-        api_sub_title,
-        api_name,
-        api_score_sub_title,
-        api_score_score,
-        gb6_data_url
-        )
+            system_sub_title,
+            model_name,
+            cpu_info,
+            uploaded_sub_title,
+            uploaded_time,
+            platform_sub_title,
+            platform_name,
+            api_sub_title,
+            api_name,
+            api_score_sub_title,
+            api_score_score,
+            gb6_data_url
+            )

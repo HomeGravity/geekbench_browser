@@ -60,7 +60,8 @@ def cpu_parse(element:str, index:int) -> str:
     )["href"] # 여백 제거
     
     
-    return (system_sub_title,
+    return (
+            system_sub_title,
             model_name,
             cpu_info,
             uploaded_sub_title,
@@ -71,4 +72,5 @@ def cpu_parse(element:str, index:int) -> str:
             single_core_score,
             multi_core_sub_title,
             multi_core_score,
-            gb6_data_url)
+            gb6_data_url
+            )
