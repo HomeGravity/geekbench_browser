@@ -5,12 +5,17 @@ def date_parse(text:str) -> str:
     
     # 생성일자 텍스트 변경
     try:
-        date_string = re.search(r'(\b\w{3} \d{1,2}, \d{4}\b)', text).group()
-        date_strptime = datetime.strptime(date_string, "%b %d, %Y")
-        return f"{date_strptime.year}-{date_strptime.month:02d}-{date_strptime.day}"
+        match = re.search(r'(\b\w{3} \d{1,2}, \d{4}\b)', text.strip())
+        
+        if match:  # 매칭 결과가 None이 아닐 경우
+            date_string = match.group()
+            date_strptime = datetime.strptime(date_string, "%b %d, %Y")
+            return f"{date_strptime.year}-{date_strptime.month:02d}-{date_strptime.day:02d}"
+        else:
+            return None  # 매칭되지 않았을 경우 None 반환
 
     except ValueError:
-        return None
+        return None  # 날짜 구문 분석 실패 시 None 반환
 
 
 # 들여쓰기 프린트

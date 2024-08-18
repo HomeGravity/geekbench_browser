@@ -4,7 +4,7 @@ from typing import Callable, Any
 
 from headers import gb6_headers
 from url import gb6_base_url
-from parser import Parser
+from gb6_parser import Parser
 from utils import *
 
 
@@ -56,6 +56,8 @@ class Geekbench6:
                     html=text, 
                     page=payload["page"]
                     )
+                
+                print(payload)
 
                 if check_for_last_page(text):
                     break
@@ -107,6 +109,7 @@ class Geekbench6:
             delay=delay,
             parser=self.parser.gpu_parse
             )
+        # indent_print(text=text)
 
 
     # 가져오기
@@ -163,17 +166,17 @@ async def run():
     await asyncio.gather(
         gb6.cpu_fetch(
             start_page=1,
-            end_page=2,
+            end_page=3,
             delay=2
         ),
-        # gb6.gpu_fetch(
-        #     start_page=1,
-        #     end_page=3,
-        #     model_name="sm-s918n",
-        #     delay=2
-        # )
+        gb6.gpu_fetch(
+            start_page=1,
+            end_page=3,
+            delay=2
+        )
     )
     
+    gb6.all_data()
     
     # 세션 종료
     await gb6.session_close()
