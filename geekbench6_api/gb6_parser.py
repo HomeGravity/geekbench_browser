@@ -68,13 +68,14 @@ class Parser:
                 
         
         
-        # 모든 데이터 사전에 추가
-        if page not in self.gb6_all_data["GB6 CPU Results"]:
-            self.gb6_all_data["GB6 CPU Results"][page] = cpu_data_temp
-
-        # 단일 데이터 사전에 추가
-        if page not in self.cpu_data:
-            self.cpu_data[page] = cpu_data_temp
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 CPU Results",
+            all_data=self.gb6_all_data,
+            data=self.cpu_data,
+            data_temp=cpu_data_temp
+            )
         
         
         return self.cpu_data
@@ -130,15 +131,14 @@ class Parser:
                 }
                 
         
-        
-        # 모든 데이터 사전에 추가
-        if page not in self.gb6_all_data["GB6 GPU Results"]:
-            self.gb6_all_data["GB6 GPU Results"][page] = gpu_data_temp
-
-        # 단일 데이터 사전에 추가
-        if page not in self.gpu_data:
-            self.gpu_data[page] = gpu_data_temp
-        
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 GPU Results",
+            all_data=self.gb6_all_data,
+            data=self.gpu_data,
+            data_temp=gpu_data_temp
+            )
         
         return self.gpu_data
     
@@ -150,7 +150,16 @@ class Parser:
     def ai_parse(self, html:str, page:str) -> dict:
         pass
     
+    # 데이터 추가 함수
+    def _add_data(self, page:int, data_name:str, all_data:dict, data:dict, data_temp:dict):
+        # 모든 데이터 사전에 추가
+        if page not in all_data[data_name]:
+            all_data[data_name][page] = data_temp
 
+        # 단일 데이터 사전에 추가
+        if page not in data:
+            data[page] = data_temp
+    
     # 모든 데이터를 반환합니다.
     def return_all_data(self):
         return self.gb6_all_data
