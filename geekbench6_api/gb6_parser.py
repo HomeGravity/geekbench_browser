@@ -2,10 +2,10 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 
 from utils import *
-from gb6_parse_scripts.cpu_parse import cpu_parse
-from gb6_parse_scripts.gpu_parse import gpu_parse
-from gb6_parse_scripts.ml_parse import ml_parse
-from gb6_parse_scripts.ai_parse import ai_parse
+from gb6_parser_scripts.cpu_parse import cpu_parse
+from gb6_parser_scripts.gpu_parse import gpu_parse
+from gb6_parser_scripts.ml_parse import ml_parse
+from gb6_parser_scripts.ai_parse import ai_parse
 
 
 class Parser:
