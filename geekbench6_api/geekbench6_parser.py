@@ -14,7 +14,6 @@ class Parser:
         # 단일 데이터 저장
         self.cpu_data = defaultdict(dict)
         self.gpu_data = defaultdict(dict)
-        self.ml_data = defaultdict(dict)
         self.ai_data = defaultdict(dict)
     
     # cpu 부분 데이터
@@ -144,8 +143,60 @@ class Parser:
     
     # ai 부분 데이터
     def ai_parse(self, html:str, page:str) -> dict:
-        pass
-    
+        soup = BeautifulSoup(markup=html, features="lxml")
+        
+        # 임시 사전 생성
+        ai_data_temp = defaultdict(dict)
+        
+        table = soup.find(name="table", attrs={"class": "table index-table"})
+        # 열(col) 개수만큼 반복합니다.
+        for index, tr in enumerate(table.find(name="tbody").find_all(name="tr"), start=1):
+            
+            (
+            model_name_head,
+            framework_name_head,
+            framework_score_1_head,
+            framework_score_2_head,
+            framework_score_3_head,
+            model_name, ap,
+            framework_name,
+            framework_score_1,
+            framework_score_2,
+            framework_score_3,
+            gb6_data_url
+            ) = ai_parse_handler(
+                soup=soup,
+                tr=tr,
+                index=index
+            )
+            
+            
+            # 중복 방지를 위해 고유값인 url을 사용합니다.
+            if gb6_data_url not in ai_data_temp:
+                ai_data_temp[gb6_data_url] = {
+                    model_name_head: {
+                        "model name": model_name,
+                        "ap": ap
+                    },
+                    framework_name_head: framework_name,
+                    "scores": {
+                        framework_score_1_head: int(framework_score_1),
+                        framework_score_2_head: int(framework_score_2),
+                        framework_score_3_head: int(framework_score_3)
+                    }
+                }
+        
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 AI Results",
+            all_data=self.gb6_all_data,
+            data=self.ai_data,
+            data_temp=ai_data_temp
+            )
+        
+        return self.ai_data
+            
     # 데이터 추가 함수
     def _add_data(self, page:int, data_name:str, all_data:dict, data:dict, data_temp:dict):
         # 모든 데이터 사전에 추가

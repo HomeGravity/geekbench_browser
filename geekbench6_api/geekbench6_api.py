@@ -143,14 +143,19 @@ class Geekbench6:
 async def run():
     gb6 = Geekbench6(model_name="sm-s928n")
     await asyncio.gather(
-        gb6.cpu_fetch(
+        # gb6.cpu_fetch(
+        #     start_page=1,
+        #     end_page=3,
+        #     delay=2
+        # ),
+        # gb6.gpu_fetch(
+        #     start_page=1,
+        #     end_page=3,
+        #     delay=2
+        # )
+        gb6.ai_fetch(
             start_page=1,
-            end_page=3,
-            delay=2
-        ),
-        gb6.gpu_fetch(
-            start_page=1,
-            end_page=3,
+            end_page=1,
             delay=2
         )
     )
