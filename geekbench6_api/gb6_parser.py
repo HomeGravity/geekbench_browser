@@ -2,10 +2,10 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 
 from utils import *
-from gb6_parser_scripts.cpu_parse import cpu_parse
-from gb6_parser_scripts.gpu_parse import gpu_parse
-from gb6_parser_scripts.ml_parse import ml_parse
-from gb6_parser_scripts.ai_parse import ai_parse
+from parser_handlers.cpu_parse_handler import cpu_parse_handler
+from parser_handlers.gpu_parse_handler import gpu_parse_handler
+from parser_handlers.ml_parse_handler import ml_parse_handler
+from parser_handlers.ai_parse_handler import ai_parse_handler
 
 
 class Parser:
@@ -44,7 +44,7 @@ class Parser:
                 multi_core_sub_title,
                 multi_core_score,
                 gb6_data_url
-            ) = cpu_parse(
+            ) = cpu_parse_handler(
                 element=element,
                 index=index
             )
@@ -106,9 +106,9 @@ class Parser:
             api_sub_title,
             api_name,
             api_score_sub_title,
-            api_score_score,
+            api_score,
             gb6_data_url
-            ) = gpu_parse(
+            ) = gpu_parse_handler(
                 element=element,
                 index=index
             )
@@ -127,7 +127,7 @@ class Parser:
                     },
                     platform_sub_title: platform_name,
                     api_sub_title: api_name,
-                    api_score_sub_title: api_score_score
+                    api_score_sub_title: api_score
                 }
                 
         

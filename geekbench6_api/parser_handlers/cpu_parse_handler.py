@@ -1,4 +1,4 @@
-def gpu_parse(element:str, index:int) -> str:
+def cpu_parse_handler(element:str, index:int) -> str:
     # 시스템 서브 타이틀
     system_sub_title = element.select_one(
         selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div.col-12.col-lg-4 > span.list-col-subtitle" % index
@@ -34,30 +34,31 @@ def gpu_parse(element:str, index:int) -> str:
         selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div:nth-child(3) > span.list-col-text" % index
     ).get_text(strip=True) # 여백 제거 
     
-    # api 서브 타이틀
-    api_sub_title = element.select_one(
-        selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div:nth-child(4) > span.list-col-subtitle" % index
+    # 싱글코어 서브 타이틀
+    single_core_sub_title = element.select_one(
+        selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div:nth-child(4) > span.list-col-subtitle-score" % index
     ).get_text(strip=True) # 여백 제거
     
-    # api 이름
-    api_name = element.select_one(
-        selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div:nth-child(4) > span.list-col-text" % index
+    # 싱글코어 점수
+    single_core_score = element.select_one(
+        selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div:nth-child(4) > span.list-col-text-score" % index
     ).get_text(strip=True) # 여백 제거
 
-    # api 점수 서브 타이틀
-    api_score_sub_title = element.select_one(
+    # 멀티코어 서브 타이틀
+    multi_core_sub_title = element.select_one(
         selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div:nth-child(5) > span.list-col-subtitle-score" % index
     ).get_text(strip=True) # 여백 제거
     
-    # api 점수
-    api_score_score = element.select_one(
+    # 멀티코어 점수
+    multi_core_score = element.select_one(
         selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div:nth-child(5) > span.list-col-text-score" % index
     ).get_text(strip=True) # 여백 제거
 
     # 링크
     gb6_data_url = "https://browser.geekbench.com" + element.select_one(
         selector="#wrap > div > div > div > div:nth-child(3) > div.col-12.col-lg-9 > div:nth-child(2) > div:nth-child(%s) > div > div > div.col-12.col-lg-4 > a" % index
-    )["href"]
+    )["href"] # 여백 제거
+    
     
     return (
             system_sub_title,
@@ -67,9 +68,9 @@ def gpu_parse(element:str, index:int) -> str:
             uploaded_time,
             platform_sub_title,
             platform_name,
-            api_sub_title,
-            api_name,
-            api_score_sub_title,
-            api_score_score,
+            single_core_sub_title,
+            single_core_score,
+            multi_core_sub_title,
+            multi_core_score,
             gb6_data_url
             )
