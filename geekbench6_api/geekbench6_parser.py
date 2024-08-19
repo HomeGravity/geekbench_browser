@@ -60,8 +60,8 @@ class Parser:
                         "parsed date": date_parse(text=uploaded_time)
                     },
                     platform_sub_title: platform_name,
-                    single_core_sub_title: single_core_score,
-                    multi_core_sub_title: multi_core_score
+                    single_core_sub_title: int(single_core_score),
+                    multi_core_sub_title: int(multi_core_score)
                 }
                 
         
@@ -125,7 +125,7 @@ class Parser:
                     },
                     platform_sub_title: platform_name,
                     api_sub_title: api_name,
-                    api_score_sub_title: api_score
+                    api_score_sub_title: int(api_score)
                 }
                 
         
