@@ -4,7 +4,7 @@ from typing import Callable, Any
 
 from headers import gb6_headers
 from url import gb6_base_url
-from gb6_parser import Parser
+from geekbench6_parser import Parser
 from utils import *
 
 
@@ -110,27 +110,6 @@ class Geekbench6:
             parser=self.parser.gpu_parse
             )
         # indent_print(text=text)
-
-
-    # 가져오기
-    async def ml_fetch(
-        self,
-        start_page:int,
-        end_page:int,
-        delay=float
-        ) -> None:
-
-        # 비동기 요청 보내기
-        text = await self._fetch(
-            url=self.gb6_base_url,
-            headers=self.gb6_headers,
-            search_k="ml_inference",
-            start_page=start_page,
-            end_page=end_page,
-            model_name=self.model_name,
-            delay=delay,
-            parser=self.parser.ml_parse
-            )
         
         
     # 가져오기

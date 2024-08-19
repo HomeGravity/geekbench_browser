@@ -4,7 +4,6 @@ from collections import defaultdict
 from utils import *
 from parser_handlers.cpu_parse_handler import cpu_parse_handler
 from parser_handlers.gpu_parse_handler import gpu_parse_handler
-from parser_handlers.ml_parse_handler import ml_parse_handler
 from parser_handlers.ai_parse_handler import ai_parse_handler
 
 
@@ -142,9 +141,6 @@ class Parser:
         
         return self.gpu_data
     
-    # ml 부분 데이터
-    def ml_parse(self, html:str, page:str) -> dict:
-        pass
     
     # ai 부분 데이터
     def ai_parse(self, html:str, page:str) -> dict:
