@@ -9,6 +9,7 @@ from utils import *
 
 class Geekbench6:
     def __init__(self, model_name:str) -> None:
+        # url은 딕셔너리 정리해줘.
         # url
         self._gb6_base_url = "https://browser.geekbench.com/search?"
         
