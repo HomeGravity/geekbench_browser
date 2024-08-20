@@ -76,7 +76,7 @@ class Geekbench6:
         ) -> None:
         
         # 비동기 요청 보내기
-        result = await self._fetch(
+        await self._fetch(
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="v6_cpu",
@@ -98,7 +98,7 @@ class Geekbench6:
         ) -> None:
 
         # 비동기 요청 보내기
-        result = await self._fetch(
+        await self._fetch(
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="v6_compute",
@@ -119,7 +119,7 @@ class Geekbench6:
         ) -> None:
 
         # 비동기 요청 보내기
-        result = await self._fetch(
+        await self._fetch(
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="ai",
