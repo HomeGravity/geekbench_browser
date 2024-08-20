@@ -27,6 +27,7 @@ class Geekbench6:
         url:str,
         headers:str,
         search_k:str,
+        payload_change:bool,
         start_page:int,
         end_page:int,
         model_name:str,
@@ -39,11 +40,13 @@ class Geekbench6:
         for page in range(start_page, end_page + 1):
             # 페이로드 작성
             payload = {
-                "k": search_k,
-                "utf8": "✓",
-                "page": page,
-                "q": model_name
-            }
+                    "k": search_k,
+                    "utf8": "✓",
+                    "page": page,
+                    "q": model_name 
+                    } if not payload_change else {
+                        "page": page
+                        }
             
             async with self.session.get(
                 url=url,
@@ -57,8 +60,10 @@ class Geekbench6:
                     page=payload["page"]
                     )
                 
-                print(payload)
+                # debug
+                print(f"search: {payload["q"]} - type: {payload["k"]} - page: {payload["page"]}") if not payload_change else print(f"page: {payload["page"]}")
 
+                
                 if check_for_last_page(text):
                     break
                 
@@ -80,6 +85,7 @@ class Geekbench6:
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="v6_cpu",
+            payload_change=False,
             start_page=start_page,
             end_page=end_page,
             model_name=self.model_name,
@@ -102,6 +108,7 @@ class Geekbench6:
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="v6_compute",
+            payload_change=False,
             start_page=start_page,
             end_page=end_page,
             model_name=self.model_name,
@@ -123,6 +130,7 @@ class Geekbench6:
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="ai",
+            payload_change=False,
             start_page=start_page,
             end_page=end_page,
             model_name=self.model_name,
@@ -194,7 +202,7 @@ async def run():
         )
     )
     
-    print(gb6.get_cpu_data(), gb6.get_ai_data())
+    print(gb6.get_cpu_data())
     
     # 세션 종료
     await gb6.session_close()
