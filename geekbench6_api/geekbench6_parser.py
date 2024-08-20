@@ -16,7 +16,7 @@ class Parser:
         self.gpu_data = defaultdict(dict)
         self.ai_data = defaultdict(dict)
     
-    # cpu 부분 데이터
+    # cpu 부분 데이터 구문 분석
     def cpu_parse(self, html:str, page:str) -> dict:
         soup = BeautifulSoup(markup=html, features="lxml")
         
@@ -60,8 +60,10 @@ class Parser:
                         "parsed date": date_parse(text=uploaded_time)
                     },
                     platform_sub_title: platform_name,
-                    single_core_sub_title: int(single_core_score),
-                    multi_core_sub_title: int(multi_core_score)
+                    "scores" : {
+                        single_core_sub_title: int(single_core_score),
+                        multi_core_sub_title: int(multi_core_score)
+                    }
                 }
                 
         
@@ -80,7 +82,7 @@ class Parser:
 
 
 
-    # gpu 부분 데이터
+    # gpu 부분 데이터 구문 분석
     def gpu_parse(self, html:str, page:str) -> dict:
         soup = BeautifulSoup(markup=html, features="lxml")
         
@@ -141,7 +143,7 @@ class Parser:
         return self.gpu_data
     
     
-    # ai 부분 데이터
+    # ai 부분 데이터 구문 분석
     def ai_parse(self, html:str, page:str) -> dict:
         soup = BeautifulSoup(markup=html, features="lxml")
         
@@ -149,21 +151,24 @@ class Parser:
         ai_data_temp = defaultdict(dict)
         
         table = soup.find(name="table", attrs={"class": "table index-table"})
-        # 열(col) 개수만큼 반복합니다.
-        for index, tr in enumerate(table.find(name="tbody").find_all(name="tr"), start=1):
+        tbody = table.find(name="tbody").find_all(name="tr") if table is not None else []
+
+        # tr 개수만큼 반복합니다.
+        for index, tr in enumerate(tbody, start=1):
             
             (
-            model_name_head,
-            framework_name_head,
-            framework_score_1_head,
-            framework_score_2_head,
-            framework_score_3_head,
-            model_name, ap,
-            framework_name,
-            framework_score_1,
-            framework_score_2,
-            framework_score_3,
-            gb6_data_url
+            model_name_column,
+            framework_name_column,
+            framework_score_1_column,
+            framework_score_2_column,
+            framework_score_3_column,
+            model_name_row, 
+            model_ap_row,
+            framework_name_row,
+            framework_score_1_row,
+            framework_score_2_row,
+            framework_score_3_row,
+            gb6_data_url_row
             ) = ai_parse_handler(
                 soup=soup,
                 tr=tr,
@@ -172,17 +177,17 @@ class Parser:
             
             
             # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url not in ai_data_temp:
-                ai_data_temp[gb6_data_url] = {
-                    model_name_head: {
-                        "model name": model_name,
-                        "ap": ap
+            if gb6_data_url_row not in ai_data_temp:
+                ai_data_temp[gb6_data_url_row] = {
+                    model_name_column: {
+                        "model name": model_name_row,
+                        "model ap": model_ap_row
                     },
-                    framework_name_head: framework_name,
+                    framework_name_column: framework_name_row,
                     "scores": {
-                        framework_score_1_head: int(framework_score_1),
-                        framework_score_2_head: int(framework_score_2),
-                        framework_score_3_head: int(framework_score_3)
+                        framework_score_1_column: int(framework_score_1_row),
+                        framework_score_2_column: int(framework_score_2_row),
+                        framework_score_3_column: int(framework_score_3_row)
                     }
                 }
         
@@ -199,13 +204,15 @@ class Parser:
             
     # 데이터 추가 함수
     def _add_data(self, page:int, data_name:str, all_data:dict, data:dict, data_temp:dict):
-        # 모든 데이터 사전에 추가
-        if page not in all_data[data_name]:
-            all_data[data_name][page] = data_temp
+        # 딕셔너리의 키 개수가 0개이면 빈 딕셔너리로 판단하여 추가하지 않음.
+        if len(data_temp.keys()) != 0:
+            # 모든 데이터 사전에 추가
+            if page not in all_data[data_name]:
+                all_data[data_name][page] = data_temp
 
-        # 단일 데이터 사전에 추가
-        if page not in data:
-            data[page] = data_temp
+            # 단일 데이터 사전에 추가
+            if page not in data:
+                data[page] = data_temp
     
     # 모든 데이터를 반환합니다.
     def return_all_data(self):

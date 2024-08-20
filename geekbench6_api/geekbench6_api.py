@@ -76,7 +76,7 @@ class Geekbench6:
         ) -> None:
         
         # 비동기 요청 보내기
-        text = await self._fetch(
+        result = await self._fetch(
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="v6_cpu",
@@ -87,7 +87,7 @@ class Geekbench6:
             parser=self.parser.cpu_parse
             )
         
-        # indent_print(text=text)
+        return result
 
                 
     # 가져오기
@@ -99,7 +99,7 @@ class Geekbench6:
         ) -> None:
 
         # 비동기 요청 보내기
-        text = await self._fetch(
+        result = await self._fetch(
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="v6_compute",
@@ -109,8 +109,8 @@ class Geekbench6:
             delay=delay,
             parser=self.parser.gpu_parse
             )
-        # indent_print(text=text)
         
+        return result
         
     # 가져오기
     async def ai_fetch(
@@ -121,7 +121,7 @@ class Geekbench6:
         ) -> None:
 
         # 비동기 요청 보내기
-        text = await self._fetch(
+        result = await self._fetch(
             url=self.gb6_base_url,
             headers=self.gb6_headers,
             search_k="ai",
@@ -131,7 +131,36 @@ class Geekbench6:
             delay=delay,
             parser=self.parser.ai_parse
             )
-        
+
+        return result
+
+    # 최신 데이터 반영 가져오기
+    def latest_cpu_fetch(
+        self,
+        start_page:int,
+        end_page:int,
+        delay=float
+        ) -> None:
+        pass
+
+    # 최신 데이터 반영 가져오기
+    def latest_gpu_fetch(
+        self,
+        start_page:int,
+        end_page:int,
+        delay=float
+        ) -> None:
+        pass
+
+    # 최신 데이터 반영 가져오기
+    def latest_ai_fetch(
+        self,
+        start_page:int,
+        end_page:int,
+        delay=float
+        ) -> None:
+        pass
+
     def all_data(self):
         indent_print(self.parser.return_all_data())
     
@@ -143,24 +172,34 @@ class Geekbench6:
 async def run():
     gb6 = Geekbench6(model_name="sm-s928n")
     await asyncio.gather(
-        # gb6.cpu_fetch(
-        #     start_page=1,
-        #     end_page=3,
-        #     delay=2
-        # ),
         # gb6.gpu_fetch(
         #     start_page=1,
         #     end_page=3,
-        #     delay=2
-        # )
-        gb6.ai_fetch(
+        #     delay=4
+        # ),
+        gb6.gpu_fetch(
             start_page=1,
-            end_page=1,
+            end_page=5,
+            delay=2
+        ),
+        # gb6.cpu_fetch(
+        #     start_page=1,
+        #     end_page=3,
+        #     delay=4
+        # ),
+        # gb6.cpu_fetch(
+        #     start_page=10,
+        #     end_page=13,
+        #     delay=4
+        # ),
+        gb6.cpu_fetch(
+            start_page=1,
+            end_page=5,
             delay=2
         )
     )
     
-    gb6.all_data()
+    # gb6.all_data()
     
     # 세션 종료
     await gb6.session_close()
