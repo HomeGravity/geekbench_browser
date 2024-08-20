@@ -77,10 +77,6 @@ class Parser:
             data_temp=cpu_data_temp
             )
         
-        
-        return self.cpu_data
-
-
 
     # gpu 부분 데이터 구문 분석
     def gpu_parse(self, html:str, page:str) -> dict:
@@ -140,8 +136,6 @@ class Parser:
             data_temp=gpu_data_temp
             )
         
-        return self.gpu_data
-    
     
     # ai 부분 데이터 구문 분석
     def ai_parse(self, html:str, page:str) -> dict:
@@ -200,7 +194,6 @@ class Parser:
             data_temp=ai_data_temp
             )
         
-        return self.ai_data
             
     # 데이터 추가 함수
     def _add_data(self, page:int, data_name:str, all_data:dict, data:dict, data_temp:dict):
@@ -214,6 +207,19 @@ class Parser:
             if page not in data:
                 data[page] = data_temp
     
+    
     # 모든 데이터를 반환합니다.
     def return_all_data(self):
-        return self.gb6_all_data
+        return self.gb6_all_data if len(self.gb6_all_data.keys()) != 0 else None
+    
+    # CPU 데이터 반환
+    def return_cpu_data(self):
+        return self.cpu_data if len(self.cpu_data.keys()) != 0 else None
+    
+    # GPU 데이터 반환
+    def return_gpu_data(self):
+        return self.gpu_data if len(self.gpu_data.keys()) != 0 else None
+    
+    # AI 데이터 반환
+    def return_ai_data(self):
+        return self.ai_data if len(self.ai_data.keys()) != 0 else None

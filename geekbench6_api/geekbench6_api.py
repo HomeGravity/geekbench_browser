@@ -70,9 +70,9 @@ class Geekbench6:
     # 가져오기
     async def cpu_fetch(
         self,
-        start_page:int,
-        end_page:int,
-        delay=float
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
         ) -> None:
         
         # 비동기 요청 보내기
@@ -87,15 +87,14 @@ class Geekbench6:
             parser=self.parser.cpu_parse
             )
         
-        return result
 
                 
     # 가져오기
     async def gpu_fetch(
         self,
-        start_page:int,
-        end_page:int,
-        delay=float
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
         ) -> None:
 
         # 비동기 요청 보내기
@@ -109,15 +108,14 @@ class Geekbench6:
             delay=delay,
             parser=self.parser.gpu_parse
             )
-        
-        return result
+
         
     # 가져오기
     async def ai_fetch(
         self,
-        start_page:int,
-        end_page:int,
-        delay=float
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
         ) -> None:
 
         # 비동기 요청 보내기
@@ -132,38 +130,50 @@ class Geekbench6:
             parser=self.parser.ai_parse
             )
 
-        return result
-
     # 최신 데이터 반영 가져오기
     def latest_cpu_fetch(
         self,
-        start_page:int,
-        end_page:int,
-        delay=float
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
         ) -> None:
         pass
 
     # 최신 데이터 반영 가져오기
     def latest_gpu_fetch(
         self,
-        start_page:int,
-        end_page:int,
-        delay=float
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
         ) -> None:
         pass
 
     # 최신 데이터 반영 가져오기
     def latest_ai_fetch(
         self,
-        start_page:int,
-        end_page:int,
-        delay=float
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
         ) -> None:
         pass
-
-    def all_data(self):
-        indent_print(self.parser.return_all_data())
     
+    # 모든 데이터 반환 - CPU, GPU, AI...
+    def get_all_data(self):
+        return self.parser.return_all_data()
+    
+    # 단일 데이터 반환 - CPU
+    def get_cpu_data(self):
+        return self.parser.return_cpu_data()
+    
+    # 단일 데이터 반환 - GPU
+    def get_gpu_data(self):
+        return self.parser.return_gpu_data()
+    
+    # 단일 데이터 반환 - AI
+    def get_ai_data(self):
+        return self.parser.return_ai_data()
+    
+        
     # 세션 종료
     async def session_close(self):
         await self.session.close()
@@ -172,34 +182,19 @@ class Geekbench6:
 async def run():
     gb6 = Geekbench6(model_name="sm-s928n")
     await asyncio.gather(
-        # gb6.gpu_fetch(
-        #     start_page=1,
-        #     end_page=3,
-        #     delay=4
-        # ),
-        gb6.gpu_fetch(
-            start_page=1,
-            end_page=5,
-            delay=2
-        ),
-        # gb6.cpu_fetch(
-        #     start_page=1,
-        #     end_page=3,
-        #     delay=4
-        # ),
-        # gb6.cpu_fetch(
-        #     start_page=10,
-        #     end_page=13,
-        #     delay=4
-        # ),
         gb6.cpu_fetch(
             start_page=1,
+            end_page=3,
+            delay=2
+        ),
+        gb6.cpu_fetch(
+            start_page=3,
             end_page=5,
             delay=2
         )
     )
     
-    # gb6.all_data()
+    print(gb6.get_cpu_data(), gb6.get_ai_data())
     
     # 세션 종료
     await gb6.session_close()
