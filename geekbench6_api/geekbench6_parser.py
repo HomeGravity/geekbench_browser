@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from collections import defaultdict
 
+
 from utils import *
 from parser_handlers.login_parse_handler import login_parse_handler
 from parser_handlers.cpu_parse_handler import cpu_parse_handler
@@ -11,11 +12,11 @@ from parser_handlers.ai_parse_handler import ai_parse_handler
 class Parser:
     def __init__(self) -> None:
         # 모든 데이터 저장
-        self.gb6_all_data = defaultdict(dict)
+        self._all_data = defaultdict(dict)
         # 단일 데이터 저장
-        self.cpu_data = defaultdict(dict)
-        self.gpu_data = defaultdict(dict)
-        self.ai_data = defaultdict(dict)
+        self._cpu_data = defaultdict(dict)
+        self._gpu_data = defaultdict(dict)
+        self._ai_data = defaultdict(dict)
     
     # 로그인 구문분석
     def login_parse(self, html:str):
@@ -94,8 +95,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 CPU Results",
-            all_data=self.gb6_all_data,
-            data=self.cpu_data,
+            all_data=self._all_data,
+            data=self._cpu_data,
             data_temp=cpu_data_temp
             )
         
@@ -153,8 +154,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 GPU Results",
-            all_data=self.gb6_all_data,
-            data=self.gpu_data,
+            all_data=self._all_data,
+            data=self._gpu_data,
             data_temp=gpu_data_temp
             )
         
@@ -211,8 +212,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 AI Results",
-            all_data=self.gb6_all_data,
-            data=self.ai_data,
+            all_data=self._all_data,
+            data=self._ai_data,
             data_temp=ai_data_temp
             )
         
@@ -231,17 +232,17 @@ class Parser:
     
     
     # 모든 데이터를 반환합니다.
-    def return_all_data(self):
-        return self.gb6_all_data if len(self.gb6_all_data.keys()) != 0 else None
+    def emit_all_data(self):
+        return self._all_data if len(self._all_data.keys()) != 0 else None
     
     # CPU 데이터 반환
-    def return_cpu_data(self):
-        return self.cpu_data if len(self.cpu_data.keys()) != 0 else None
+    def emit_cpu_data(self):
+        return self._cpu_data if len(self._cpu_data.keys()) != 0 else None
     
     # GPU 데이터 반환
-    def return_gpu_data(self):
-        return self.gpu_data if len(self.gpu_data.keys()) != 0 else None
+    def emit_gpu_data(self):
+        return self._gpu_data if len(self._gpu_data.keys()) != 0 else None
     
     # AI 데이터 반환
-    def return_ai_data(self):
-        return self.ai_data if len(self.ai_data.keys()) != 0 else None
+    def emit_ai_data(self):
+        return self._ai_data if len(self._ai_data.keys()) != 0 else None
