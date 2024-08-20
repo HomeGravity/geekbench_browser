@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 
 from utils import *
+from parser_handlers.login_parse_handler import login_parse_handler
 from parser_handlers.cpu_parse_handler import cpu_parse_handler
 from parser_handlers.gpu_parse_handler import gpu_parse_handler
 from parser_handlers.ai_parse_handler import ai_parse_handler
@@ -15,6 +16,27 @@ class Parser:
         self.cpu_data = defaultdict(dict)
         self.gpu_data = defaultdict(dict)
         self.ai_data = defaultdict(dict)
+    
+    # 로그인 구문분석
+    def login_parse(self, html:str):
+        soup = BeautifulSoup(markup=html, features="lxml")
+        (
+        param, 
+        token, 
+        submit_name, 
+        submit_value, 
+        login_name, 
+        passwrod_name
+        ) = login_parse_handler(soup=soup)
+        
+        return (
+            param, 
+            token, 
+            submit_name, 
+            submit_value, 
+            login_name, 
+            passwrod_name
+            )
     
     # cpu 부분 데이터 구문 분석
     def cpu_parse(self, html:str, page:str) -> dict:

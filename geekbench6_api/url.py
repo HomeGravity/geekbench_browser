@@ -25,3 +25,7 @@ gb6_ml_chart_url = "https://browser.geekbench.com/ml-benchmarks"
 gb6_metal_chart_url = "https://browser.geekbench.com/metal-benchmarks"
 gb6_opencl_chart_url = "https://browser.geekbench.com/opencl-benchmarks"
 gb6_vulkan_chart_url = "https://browser.geekbench.com/vulkan-benchmarks"
+
+# login url
+login_session_url = "https://browser.geekbench.com/session/new"
+login_create_url = "https://browser.geekbench.com/session/create" # post
