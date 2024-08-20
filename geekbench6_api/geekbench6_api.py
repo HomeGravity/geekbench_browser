@@ -1,6 +1,6 @@
 import aiohttp
 import asyncio
-from typing import Callable, Any
+from typing import Callable, Any, Union
 
 from headers import gb6_headers
 from url import *
@@ -199,9 +199,21 @@ class Geekbench6:
             delay=delay,
             parser=self.parser.ai_parse
             )
-
+    
+    # 상세한 정보 가져오기
+    async def details_fetch(self, urls:Union[list, tuple], delay:float=3):
+        for url in urls:
+            async with self.session.get(
+                url=url+".gb6",
+                headers=self.gb6_headers
+                ) as response:
+                
+                temp = await response.json()
+                print(temp["processor_frequency"]["frequencies"])
+                await asyncio.sleep(delay=delay)
+                
     # 최신 데이터 반영 가져오기
-    def latest_cpu_fetch(
+    async def latest_cpu_fetch(
         self,
         start_page:int=1,
         end_page:int=1,
@@ -210,7 +222,7 @@ class Geekbench6:
         pass
 
     # 최신 데이터 반영 가져오기
-    def latest_gpu_fetch(
+    async def latest_gpu_fetch(
         self,
         start_page:int=1,
         end_page:int=1,
@@ -219,7 +231,7 @@ class Geekbench6:
         pass
 
     # 최신 데이터 반영 가져오기
-    def latest_ai_fetch(
+    async def latest_ai_fetch(
         self,
         start_page:int=1,
         end_page:int=1,
@@ -253,16 +265,26 @@ async def run():
     gb6 = Geekbench6(model_name="sm-s928n")
     await gb6.login(id="id", passwrod="passwrod")
     
+    # await asyncio.gather(
+    #     gb6.cpu_fetch(
+    #         start_page=1,
+    #         end_page=3,
+    #         delay=2
+    #     ),
+    #     gb6.cpu_fetch(
+    #         start_page=3,
+    #         end_page=5,
+    #         delay=2
+    #     )
+    # )
     await asyncio.gather(
-        gb6.cpu_fetch(
-            start_page=1,
-            end_page=3,
-            delay=2
+        gb6.details_fetch(
+            urls=[],
+            delay=3
         ),
-        gb6.cpu_fetch(
-            start_page=3,
-            end_page=5,
-            delay=2
+        gb6.details_fetch(
+            urls=[],
+            delay=3
         )
     )
     
