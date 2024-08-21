@@ -279,7 +279,7 @@ class Geekbench6:
             start_page=start_page,
             end_page=end_page,
             delay=delay,
-            parser=self._parser.latest_cpu_parse
+            parser=None
             )
 
     # 최신 데이터 반영 가져오기
@@ -298,7 +298,7 @@ class Geekbench6:
             start_page=start_page,
             end_page=end_page,
             delay=delay,
-            parser=self._parser.latest_cpu_parse
+            parser=None
             )
     
     # 모든 데이터 반환 - CPU, GPU, AI...
