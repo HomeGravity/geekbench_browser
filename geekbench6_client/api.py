@@ -249,7 +249,64 @@ class Geekbench6:
             parser=self._parser.gpu_details_parse,
             type="compute"
         )
+    
+    # 안드로이드 벤치마크 차트 json
+    async def android_chart_json_fetch_and_get(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_android_chart_url"],
+            extension=".json"
+        )
+    
+    # ios 벤치마크 차트 json
+    async def ios_chart_json_fetch_and_get_data(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_ios_chart_url"],
+            extension=".json"
+        )
 
+    # mac 벤치마크 차트 json
+    async def mac_chart_json_fetch_and_get_data(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_mac_chart_url"],
+            extension=".json"
+        )
+
+    # processor 벤치마크 차트 json
+    async def processor_chart_json_fetch_and_get_data(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_processor_chart_url"],
+            extension=".json"
+        )
+    
+    # ml 벤치마크 차트 json
+    async def ml_chart_json_fetch_and_get_data(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_ml_chart_url"],
+            extension=".json"
+        )
+    
+    # metal 벤치마크 차트 json
+    async def metal_chart_json_fetch_and_get_data(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_metal_chart_url"],
+            extension=".json"
+        )
+    
+    # opencl 벤치마크 차트 json
+    async def opencl_chart_json_fetch_and_get_data(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_opencl_chart_url"],
+            extension=".json"
+        )
+    
+    # vulkan 벤치마크 차트 json
+    async def vulkan_chart_json_fetch_and_get_data(self):
+        return await self._json_fetch(
+            url=self._gb6_urls["gb6_vulkan_chart_url"],
+            extension=".json"
+        )
+    
+    
     # 최신 데이터 반영 가져오기
     async def latest_cpu_fetch(
         self,
