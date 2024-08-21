@@ -50,9 +50,9 @@ class Geekbench6:
         # 파싱 객체 초기화
         self._parser = Parser()
         
-        
         # 인스턴스 변수
         self._model_name = model_name # 하나의 객체는 하나의 모델만 수집할 수 있도록 합니다.
+
     
     # 로그인
     async def login(self, id:str, passwrod:str):
@@ -211,7 +211,8 @@ class Geekbench6:
     
     # 상세한 정보 가져오기
     async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None):
-        for index, url in enumerate(urls, start=1):
+        total_urls = len(urls)  # 전체 URL 수를 미리 계산
+        for handling, url in enumerate(urls, start=1):
             if type in url:
                 async with self._session.get(
                     url=url+".gb6",
@@ -223,7 +224,7 @@ class Geekbench6:
                     parser(url=url, result_data=result)
                     
                     # debug
-                    print(f"type: {type} - index: {index}")
+                    print(f"type: {type} - url: {url} - handling: {handling}/{total_urls}")
                     await asyncio.sleep(delay=delay)
     
     # CPU 상세한 정보
@@ -359,10 +360,10 @@ async def run():
             urls=[],
             delay=3
         ),
-        gb6.gpu_details_fetch(
-            urls=[],
-            delay=3
-        )
+        # gb6.gpu_details_fetch(
+        #     urls=[],
+        #     delay=3
+        # )
     )
     
     indent_print(gb6.get_cpu_details_data())
