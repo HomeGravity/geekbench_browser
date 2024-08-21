@@ -1,6 +1,10 @@
 # geekbench6-api
 Geekbench6의 비공식(non-officia) API입니다.
 
+## 설치 방법
+- git clone [url.git] 또는 git colne [Download ZIP] 등을 사용해주세요.
+- 나중에 pypi 등록을 해보겠습니다.
+
 ## 개발 개요
 2024년 8월 16일, Geekbench6 non-officia api의 개발을 시작합니다. 본 API는 Geekbench Browser를 기반으로 하여 CPU, GPU(Compute), 인공지능(AI) 등 다양한 성능 벤치마크 데이터를 스크래핑할 수 있도록 설계되었습니다.
 
