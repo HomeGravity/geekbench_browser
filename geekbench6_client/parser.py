@@ -2,12 +2,12 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 
 
-from utils import *
-from parser_handlers.login_parse_handler import login_parse_handler
-from parser_handlers.cpu_parse_handler import cpu_parse_handler
-from parser_handlers.gpu_parse_handler import gpu_parse_handler
-from parser_handlers.ai_parse_handler import ai_parse_handler
-from parser_handlers.latest_cpu_parse_handler import latest_cpu_parse_handler
+from .utils import *
+from .parser_handlers.login_parse_handler import login_parse_handler
+from .parser_handlers.cpu_parse_handler import cpu_parse_handler
+from .parser_handlers.gpu_parse_handler import gpu_parse_handler
+from .parser_handlers.ai_parse_handler import ai_parse_handler
+from .parser_handlers.latest_cpu_parse_handler import latest_cpu_parse_handler
 
 
 class Parser:
