@@ -279,7 +279,7 @@ class Geekbench6:
             start_page=start_page,
             end_page=end_page,
             delay=delay,
-            parser=None
+            parser=self._parser.latest_gpu_parse
             )
 
     # 최신 데이터 반영 가져오기
@@ -298,7 +298,7 @@ class Geekbench6:
             start_page=start_page,
             end_page=end_page,
             delay=delay,
-            parser=None
+            parser=self._parser.latest_ai_parse
             )
     
     # 모든 데이터 반환 - CPU, GPU, AI...
@@ -328,7 +328,15 @@ class Geekbench6:
     # 단일 데이터 반환 - LATEST CPU
     def get_latest_cpu_data(self):
         return self._parser.emit_latest_cpu_data()
-        
+
+    # 단일 데이터 반환 - LATEST GPU
+    def get_latest_gpu_data(self):
+        return self._parser.emit_latest_gpu_data()
+    
+    # 단일 데이터 반환 - LATEST AI
+    def get_latest_ai_data(self):
+        return self._parser.emit_latest_ai_data()
+
     # 세션 종료
     async def session_close(self):
         await self._session.close()

@@ -8,6 +8,7 @@ from .parser_handlers.cpu_parse_handler import cpu_parse_handler
 from .parser_handlers.gpu_parse_handler import gpu_parse_handler
 from .parser_handlers.ai_parse_handler import ai_parse_handler
 from .parser_handlers.latest_cpu_parse_handler import latest_cpu_parse_handler
+from .parser_handlers.latest_gpu_parse_handler import latest_gpu_parse_handler
 
 
 class Parser:
@@ -26,7 +27,8 @@ class Parser:
         
         # - latest (최신)
         self._latest_cpu_data = defaultdict(dict)
-
+        self._latest_gpu_data = defaultdict(dict)
+        self._latest_ai_data = defaultdict(dict)
 
     # 로그인 구문분석
     def login_parse(self, html:str):
@@ -316,6 +318,55 @@ class Parser:
         # 임시 사전 생성
         latest_gpu_data_temp = defaultdict(dict)
 
+        # 열(col) 개수만큼 반복합니다.
+        for index, element in enumerate(
+            soup.find_all(name="div", attrs={"class": "col-12 list-col"}),
+            start=1
+            ):
+            
+            
+            (
+            system_sub_title,
+            model_name,
+            cpu_info,
+            uploaded_sub_title,
+            uploaded_time,
+            platform_sub_title,
+            platform_name,
+            api_sub_title,
+            api_name,
+            api_score_sub_title,
+            api_score,
+            gb6_data_url
+            ) = latest_gpu_parse_handler(
+                element=element,
+                index=index
+            )
+        
+            # 중복 방지를 위해 고유값인 url을 사용합니다.
+            if gb6_data_url not in latest_gpu_data_temp:
+                latest_gpu_data_temp[gb6_data_url] = {
+                    system_sub_title: {
+                        "model name": model_name,
+                        "cpu info": cpu_info
+                    },
+                    uploaded_sub_title: {
+                        "default date": uploaded_time.strip(),
+                        "parsed date": date_parse(text=uploaded_time)
+                    },
+                    platform_sub_title: platform_name,
+                    api_sub_title: api_name,
+                    api_score_sub_title: int(api_score)
+                }
+
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 LATEST CPU Results",
+            all_data=self._all_data,
+            data=self._latest_gpu_data,
+            data_temp=latest_gpu_data_temp
+            )
 
     # 최신 AI 데이터 반영 구문분석
     def latest_ai_parse(self, html:str, page:str) -> dict:
@@ -370,3 +421,10 @@ class Parser:
     def emit_latest_cpu_data(self):
         return self._latest_cpu_data if len(self._latest_cpu_data.keys()) != 0 else None
     
+    # LATEST CPU 데이터 반환
+    def emit_latest_gpu_data(self):
+        return self._latest_gpu_data if len(self._latest_gpu_data.keys()) != 0 else None
+    
+    # LATEST CPU 데이터 반환
+    def emit_latest_ai_data(self):
+        return self._latest_ai_data if len(self._latest_ai_data.keys()) != 0 else None
