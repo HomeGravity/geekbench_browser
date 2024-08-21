@@ -52,7 +52,7 @@ class Geekbench6:
         
         # 인스턴스 변수
         self._model_name = model_name # 하나의 객체는 하나의 모델만 수집할 수 있도록 합니다.
-
+    
     
     # 로그인
     async def login(self, id:str, passwrod:str):
@@ -61,7 +61,7 @@ class Geekbench6:
             url=self._gb6_urls["login_session_url"],
             headers=self._gb6_headers
             ) as response:
-
+    
             (
             param, 
             token, 
