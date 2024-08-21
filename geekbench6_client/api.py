@@ -209,23 +209,28 @@ class Geekbench6:
             parser=self._parser.ai_parse
             )
     
+    #  json 전용
+    async def _json_fetch(self, url:str, extension:str=None):
+        async with self._session.get(
+            url=url+extension,
+            headers=self._gb6_headers
+            ) as response:
+            
+            # json으로 변환
+            return await response.json()
+    
     # 상세한 정보 가져오기
     async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None):
         total_urls = len(urls)  # 전체 URL 수를 미리 계산
         for handling, url in enumerate(urls, start=1):
             if type in url:
-                async with self._session.get(
-                    url=url+".gb6",
-                    headers=self._gb6_headers
-                    ) as response:
                     
-                    # json으로 변환
-                    result = await response.json()
-                    parser(url=url, result_data=result)
-                    
-                    # debug
-                    print(f"type: {type} - url: {url} - handling: {handling}/{total_urls}")
-                    await asyncio.sleep(delay=delay)
+                result = await self._json_fetch(url=url, extension=".gb6")
+                parser(url=url, result_data=result)
+                
+                # debug
+                print(f"type: {type} - url: {url} - handling: {handling}/{total_urls}")
+                await asyncio.sleep(delay=delay)
     
     # CPU 상세한 정보
     async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3):
