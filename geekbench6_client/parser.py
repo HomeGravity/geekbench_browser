@@ -426,7 +426,7 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 LATEST CPU Results",
+            data_name="GB6 LATEST AI Results",
             all_data=self._all_data,
             data=self._latest_ai_data,
             data_temp=latest_ai_data_temp
