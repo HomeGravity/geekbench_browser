@@ -9,7 +9,7 @@ from .parser_handlers.gpu_parse_handler import gpu_parse_handler
 from .parser_handlers.ai_parse_handler import ai_parse_handler
 from .parser_handlers.latest_cpu_parse_handler import latest_cpu_parse_handler
 from .parser_handlers.latest_gpu_parse_handler import latest_gpu_parse_handler
-
+from .parser_handlers.latest_ai_parse_handler import latest_ai_parse_handler
 
 class Parser:
     def __init__(self) -> None:
@@ -91,7 +91,7 @@ class Parser:
                     },
                     uploaded_sub_title: {
                         "default date": uploaded_time.strip(),
-                        "parsed date": date_parse(text=uploaded_time)
+                        "parsed date": extract_date(text=uploaded_time)
                     },
                     platform_sub_title: platform_name,
                     "scores" : {
@@ -152,7 +152,7 @@ class Parser:
                     },
                     uploaded_sub_title: {
                         "default date": uploaded_time.strip(),
-                        "parsed date": date_parse(text=uploaded_time)
+                        "parsed date": extract_date(text=uploaded_time)
                     },
                     platform_sub_title: platform_name,
                     api_sub_title: api_name,
@@ -292,7 +292,7 @@ class Parser:
                     },
                     uploaded_sub_title: {
                         "default date": uploaded_time.strip(),
-                        "parsed date": date_parse(text=uploaded_time)
+                        "parsed date": extract_date(text=uploaded_time)
                     },
                     platform_sub_title: platform_name,
                     "scores" : {
@@ -352,7 +352,7 @@ class Parser:
                     },
                     uploaded_sub_title: {
                         "default date": uploaded_time.strip(),
-                        "parsed date": date_parse(text=uploaded_time)
+                        "parsed date": extract_date(text=uploaded_time)
                     },
                     platform_sub_title: platform_name,
                     api_sub_title: api_name,
@@ -374,7 +374,63 @@ class Parser:
 
         # 임시 사전 생성
         latest_ai_data_temp = defaultdict(dict)
+        
+        table = soup.find(name="table", attrs={"class": "table index-table"})
+        tbody = table.find(name="tbody").find_all(name="tr") if table is not None else []
+        
+        # tr 개수만큼 반복합니다.
+        for index, tr in enumerate(tbody, start=1):
 
+            (
+            uploaded_name_column,
+            model_name_column,
+            framework_name_column,
+            framework_score_1_column,
+            framework_score_2_column,
+            framework_score_3_column,
+            uploaded_name_row,
+            model_name_row, 
+            model_ap_row,
+            framework_name_row,
+            framework_score_1_row,
+            framework_score_2_row,
+            framework_score_3_row,
+            gb6_data_url_row
+            ) = latest_ai_parse_handler(
+                soup=soup,
+                tr=tr,
+                index=index
+            )
+            
+            
+            # 중복 방지를 위해 고유값인 url을 사용합니다.
+            if gb6_data_url_row not in latest_ai_data_temp:
+                latest_ai_data_temp[gb6_data_url_row] = {
+                    model_name_column: {
+                        "model name": model_name_row,
+                        "model ap": model_ap_row
+                    },
+                    uploaded_name_column: {
+                        "default date": uploaded_name_row,
+                        "parsed date": parse_full_date(text=uploaded_name_row)
+                    },
+                    framework_name_column: framework_name_row,
+                    "scores": {
+                        framework_score_1_column: int(framework_score_1_row),
+                        framework_score_2_column: int(framework_score_2_row),
+                        framework_score_3_column: int(framework_score_3_row)
+                    }
+                }
+
+
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 LATEST CPU Results",
+            all_data=self._all_data,
+            data=self._latest_ai_data,
+            data_temp=latest_ai_data_temp
+            )
 
     # 데이터 추가 함수
     def _add_data(self, page:int=None, data_name:str=None, all_data:dict=None, data:dict=None, data_temp:dict=None, url:str=None):
@@ -421,10 +477,10 @@ class Parser:
     def emit_latest_cpu_data(self):
         return self._latest_cpu_data if len(self._latest_cpu_data.keys()) != 0 else None
     
-    # LATEST CPU 데이터 반환
+    # LATEST GPU 데이터 반환
     def emit_latest_gpu_data(self):
         return self._latest_gpu_data if len(self._latest_gpu_data.keys()) != 0 else None
     
-    # LATEST CPU 데이터 반환
+    # LATEST AI 데이터 반환
     def emit_latest_ai_data(self):
         return self._latest_ai_data if len(self._latest_ai_data.keys()) != 0 else None

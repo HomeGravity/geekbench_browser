@@ -102,7 +102,8 @@ class Geekbench6:
         end_page:int=None,
         model_name:str=None,
         delay:float=None,
-        parser:Callable[[str], Any]=None
+        parser:Callable[[str], Any]=None,
+        type:str=None
         ) -> dict:
         
         
@@ -131,7 +132,7 @@ class Geekbench6:
                     )
                 
                 # debug
-                print(f"search: {payload["q"]} - type: {payload["k"]} - page: {payload["page"]}") if not payload_change else print(f"page: {payload["page"]}")
+                print(f"search: {payload["q"]} - type: {payload["k"]} - page: {payload["page"]}") if not payload_change else print(f"type: {type} - page: {payload["page"]}")
 
                 
                 if check_for_last_page(text):
@@ -260,7 +261,8 @@ class Geekbench6:
             start_page=start_page,
             end_page=end_page,
             delay=delay,
-            parser=self._parser.latest_cpu_parse
+            parser=self._parser.latest_cpu_parse,
+            type="latest cpu"
             )
 
     # 최신 데이터 반영 가져오기
@@ -279,7 +281,8 @@ class Geekbench6:
             start_page=start_page,
             end_page=end_page,
             delay=delay,
-            parser=self._parser.latest_gpu_parse
+            parser=self._parser.latest_gpu_parse,
+            type="latest gpu"
             )
 
     # 최신 데이터 반영 가져오기
@@ -298,7 +301,8 @@ class Geekbench6:
             start_page=start_page,
             end_page=end_page,
             delay=delay,
-            parser=self._parser.latest_ai_parse
+            parser=self._parser.latest_ai_parse,
+            type="latest ai"
             )
     
     # 모든 데이터 반환 - CPU, GPU, AI...

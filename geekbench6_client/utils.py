@@ -1,5 +1,5 @@
-# 날짜 데이터를 구문 분석
-def date_parse(text:str) -> str:
+# 단순 날짜 추출 및 형식 변환
+def extract_date(text:str) -> str:
     from datetime import datetime
     import re
     
@@ -16,6 +16,17 @@ def date_parse(text:str) -> str:
 
     except ValueError:
         return None  # 날짜 구문 분석 실패 시 None 반환
+
+
+# 전체 날짜 파싱 및 형식 변환
+def parse_full_date(text:str) -> str:
+    from datetime import datetime
+    
+    try:
+        dt = datetime.strptime(text, '%a, %d %b %Y %H:%M:%S %z')
+        return dt.strftime('%Y-%m-%d-%H:%M:%S')
+    except ValueError:
+        return None  # 날짜 형식이 아닐 경우 None 반환
 
 
 # 들여쓰기 프린트
