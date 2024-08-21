@@ -2,7 +2,7 @@ import aiohttp
 import asyncio
 from typing import Callable, Any, Union
 
-from geekbench6_parser import Parser
+from parser import Parser
 from utils import *
 
 
