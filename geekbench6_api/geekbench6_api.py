@@ -9,38 +9,30 @@ from utils import *
 
 class Geekbench6:
     def __init__(self, model_name:str) -> None:
-        # url은 딕셔너리 정리해줘.
         # url
-        self._gb6_base_url = "https://browser.geekbench.com/search?"
-        
-        # 긱벤치6 최신 데이터 반영 url
-        self._gb6_latest_cpu_url = "https://browser.geekbench.com/v6/cpu"
-        self._gb6_latest_compute_url = "https://browser.geekbench.com/v6/compute"
-        self._gb6_latest_ai_url = "https://browser.geekbench.com/ai/v1"
-        
-        # 긱벤치6 가장 높은 싱글/멀티 순위 반영 url
-        self._gb6_top_single_url = "https://browser.geekbench.com/v6/cpu/singlecore"
-        self._gb6_top_multi_url = "https://browser.geekbench.com/v6/cpu/multicore"
-        
-        # 긱벤치6 차트 url
-        # - cpu
-        self._gb6_android_chart_url = "https://browser.geekbench.com/android-benchmarks"
-        self._gb6_ios_chart_url = "https://browser.geekbench.com/ios-benchmarks"
-        self._gb6_mac_chart_url = "https://browser.geekbench.com/mac-benchmarks"
-        self._gb6_processor_chart_url = "https://browser.geekbench.com/processor-benchmarks"
-        
-        # - ml
-        # ml은 ai로 변할 가능성이 높아 며칠간 작업하지 않음.
-        self._gb6_ml_chart_url = "https://browser.geekbench.com/ml-benchmarks"
-        
-        # - gpu(compute)
-        self._gb6_metal_chart_url = "https://browser.geekbench.com/metal-benchmarks"
-        self._gb6_opencl_chart_url = "https://browser.geekbench.com/opencl-benchmarks"
-        self._gb6_vulkan_chart_url = "https://browser.geekbench.com/vulkan-benchmarks"
-        
-        # login url
-        self._login_session_url =  "https://browser.geekbench.com/session/new"
-        self._login_create_url = "https://browser.geekbench.com/session/create" # post
+        self._gb6_urls = {
+            "gb6_base_url": "https://browser.geekbench.com/search?",
+            # 최신
+            "gb6_latest_cpu_url": "https://browser.geekbench.com/v6/cpu",
+            "gb6_latest_compute_url": "https://browser.geekbench.com/v6/compute",
+            "gb6_latest_ai_url": "https://browser.geekbench.com/ai/v1",
+            # top
+            "gb6_top_single_url": "https://browser.geekbench.com/v6/cpu/singlecore",
+            "gb6_top_multi_url": "https://browser.geekbench.com/v6/cpu/multicore",
+            # 차트
+            "gb6_android_chart_url": "https://browser.geekbench.com/android-benchmarks",
+            "gb6_ios_chart_url": "https://browser.geekbench.com/ios-benchmarks",
+            "gb6_mac_chart_url": "https://browser.geekbench.com/mac-benchmarks",
+            "gb6_processor_chart_url": "https://browser.geekbench.com/processor-benchmarks",
+            "gb6_ml_chart_url": "https://browser.geekbench.com/ml-benchmarks",
+            # 차트 - 그래픽 api
+            "gb6_metal_chart_url": "https://browser.geekbench.com/metal-benchmarks",
+            "gb6_opencl_chart_url": "https://browser.geekbench.com/opencl-benchmarks",
+            "gb6_vulkan_chart_url": "https://browser.geekbench.com/vulkan-benchmarks",
+            # 로그인
+            "login_session_url": "https://browser.geekbench.com/session/new",
+            "login_create_url": "https://browser.geekbench.com/session/create"
+        }
         
         # 헤더
         self._gb6_headers = {
@@ -66,7 +58,7 @@ class Geekbench6:
     async def login(self, id:str, passwrod:str):
         # 페이로드 작성 로직
         async with self._session.get(
-            url=self._login_session_url,
+            url=self._gb6_urls["login_session_url"],
             headers=self._gb6_headers
             ) as response:
 
@@ -93,7 +85,7 @@ class Geekbench6:
         
         # 로그인 요청 로직 (비워둠)
         async with self._session.post(
-            url=self._login_create_url,
+            url=self._gb6_urls["login_create_url"],
             headers=self._gb6_headers,
             data=payload
             ) as response:
@@ -103,15 +95,15 @@ class Geekbench6:
     # 비동기 요청 함수
     async def _fetch(
         self,
-        url:str,
-        headers:str,
-        search_k:str,
-        payload_change:bool,
-        start_page:int,
-        end_page:int,
-        model_name:str,
-        delay:float,
-        parser:Callable[[str], Any]
+        url:str=None,
+        headers:str=None,
+        search_k:str=None,
+        payload_change:bool=None,
+        start_page:int=None,
+        end_page:int=None,
+        model_name:str=None,
+        delay:float=None,
+        parser:Callable[[str], Any]=None
         ) -> dict:
         
         
@@ -161,7 +153,7 @@ class Geekbench6:
         
         # 비동기 요청 보내기
         await self._fetch(
-            url=self._gb6_base_url,
+            url=self._gb6_urls["gb6_base_url"],
             headers=self._gb6_headers,
             search_k="v6_cpu",
             payload_change=False,
@@ -184,7 +176,7 @@ class Geekbench6:
 
         # 비동기 요청 보내기
         await self._fetch(
-            url=self._gb6_base_url,
+            url=self._gb6_urls["gb6_base_url"],
             headers=self._gb6_headers,
             search_k="v6_compute",
             payload_change=False,
@@ -206,7 +198,7 @@ class Geekbench6:
 
         # 비동기 요청 보내기
         await self._fetch(
-            url=self._gb6_base_url,
+            url=self._gb6_urls["gb6_base_url"],
             headers=self._gb6_headers,
             search_k="ai",
             payload_change=False,
@@ -218,17 +210,40 @@ class Geekbench6:
             )
     
     # 상세한 정보 가져오기
-    async def details_fetch(self, urls:Union[list, tuple], delay:float=3):
-        for url in urls:
-            async with self._session.get(
-                url=url+".gb6",
-                headers=self._gb6_headers
-                ) as response:
-                
-                temp = await response.json()
-                print(temp["processor_frequency"]["frequencies"])
-                await asyncio.sleep(delay=delay)
-                
+    async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None):
+        for index, url in enumerate(urls, start=1):
+            if type in url:
+                async with self._session.get(
+                    url=url+".gb6",
+                    headers=self._gb6_headers
+                    ) as response:
+                    
+                    # json으로 변환
+                    result = await response.json()
+                    parser(url=url, result_data=result)
+                    
+                    # debug
+                    print(f"type: {type} - index: {index}")
+                    await asyncio.sleep(delay=delay)
+    
+    # CPU 상세한 정보
+    async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3):
+        await self._details_fetch(
+            urls=urls,
+            delay=delay,
+            parser=self._parser.cpu_details_parse,
+            type="cpu"
+        )
+
+    # GPU 상세한 정보
+    async def gpu_details_fetch(self, urls:Union[list, tuple], delay:float=3):
+        await self._details_fetch(
+            urls=urls,
+            delay=delay,
+            parser=self._parser.gpu_details_parse,
+            type="compute"
+        )
+
     # 최신 데이터 반영 가져오기
     async def latest_cpu_fetch(
         self,
@@ -236,7 +251,17 @@ class Geekbench6:
         end_page:int=1,
         delay:float=3
         ) -> None:
-        pass
+
+        # 비동기 요청 보내기
+        await self._fetch(
+            url=self._gb6_urls["gb6_latest_cpu_url"],
+            headers=self._gb6_headers,
+            payload_change=True,
+            start_page=start_page,
+            end_page=end_page,
+            delay=delay,
+            parser=self._parser.latest_cpu_parse
+            )
 
     # 최신 데이터 반영 가져오기
     async def latest_gpu_fetch(
@@ -245,7 +270,17 @@ class Geekbench6:
         end_page:int=1,
         delay:float=3
         ) -> None:
-        pass
+        
+        # 비동기 요청 보내기
+        await self._fetch(
+            url=self._gb6_urls["gb6_latest_compute_url"],
+            headers=self._gb6_headers,
+            payload_change=True,
+            start_page=start_page,
+            end_page=end_page,
+            delay=delay,
+            parser=self._parser.latest_cpu_parse
+            )
 
     # 최신 데이터 반영 가져오기
     async def latest_ai_fetch(
@@ -254,7 +289,17 @@ class Geekbench6:
         end_page:int=1,
         delay:float=3
         ) -> None:
-        pass
+        
+        # 비동기 요청 보내기
+        await self._fetch(
+            url=self._gb6_urls["gb6_latest_ai_url"],
+            headers=self._gb6_headers,
+            payload_change=True,
+            start_page=start_page,
+            end_page=end_page,
+            delay=delay,
+            parser=self._parser.latest_cpu_parse
+            )
     
     # 모든 데이터 반환 - CPU, GPU, AI...
     def get_all_data(self):
@@ -272,6 +317,17 @@ class Geekbench6:
     def get_ai_data(self):
         return self._parser.emit_ai_data()
     
+    # 단일 데이터 반환 - CPU DETAILS
+    def get_cpu_details_data(self):
+        return self._parser.emit_cpu_details_data()
+    
+    # 단일 데이터 반환 - GPU DETAILS
+    def get_gpu_details_data(self):
+        return self._parser.emit_gpu_details_data()
+    
+    # 단일 데이터 반환 - LATEST CPU
+    def get_latest_cpu_data(self):
+        return self._parser.emit_latest_cpu_data()
         
     # 세션 종료
     async def session_close(self):
@@ -282,30 +338,35 @@ async def run():
     gb6 = Geekbench6(model_name="sm-s928n")
     # await gb6.login(id="id", passwrod="passwrod")
     
+    # await asyncio.gather(
+    #     gb6.latest_cpu_fetch(
+    #         start_page=1,
+    #         end_page=1,
+    #         delay=2
+    #     ),
+        # gb6.cpu_fetch(
+        #     start_page=3,
+        #     end_page=5,
+        #     delay=2
+        # )
+    # )
     await asyncio.gather(
-        gb6.cpu_fetch(
-            start_page=1,
-            end_page=3,
-            delay=2
+        gb6.cpu_details_fetch(
+            urls=[],
+            delay=3
         ),
-        gb6.cpu_fetch(
-            start_page=3,
-            end_page=5,
-            delay=2
+        gb6.cpu_details_fetch(
+            urls=[],
+            delay=3
+        ),
+        gb6.gpu_details_fetch(
+            urls=[],
+            delay=3
         )
     )
-    # await asyncio.gather(
-    #     gb6.details_fetch(
-    #         urls=[],
-    #         delay=3
-    #     ),
-    #     gb6.details_fetch(
-    #         urls=[],
-    #         delay=3
-    #     )
-    # )
     
-    print(gb6.get_cpu_data())
+    indent_print(gb6.get_cpu_details_data())
+    indent_print(gb6.get_gpu_details_data())
     
     # 세션 종료
     await gb6.session_close()
