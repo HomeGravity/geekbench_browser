@@ -1,20 +1,20 @@
 from bs4 import BeautifulSoup
 from collections import defaultdict
+from typing import Callable, Any, Union
 
 
 from .utils import *
 from .parser_handlers.login_parse_handler import login_parse_handler
-from .parser_handlers.cpu_parse_handler import cpu_parse_handler
-from .parser_handlers.gpu_parse_handler import gpu_parse_handler
-from .parser_handlers.ai_parse_handler import ai_parse_handler
-from .parser_handlers.latest_cpu_parse_handler import latest_cpu_parse_handler
-from .parser_handlers.latest_gpu_parse_handler import latest_gpu_parse_handler
-from .parser_handlers.latest_ai_parse_handler import latest_ai_parse_handler
+from .parser_handlers.cpu_parse_handler import cpu_parse_handler, latest_or_top_cpu_parse_handler
+from .parser_handlers.gpu_parse_handler import gpu_parse_handler, latest_gpu_parse_handler
+from .parser_handlers.ai_parse_handler import ai_parse_handler, latest_ai_parse_handler
+
 
 class Parser:
     def __init__(self) -> None:
         # 모든 데이터 저장
         self._all_data = defaultdict(dict)
+        
         # 단일 데이터 저장
         # - search (검색)
         self._cpu_data = defaultdict(dict)
@@ -29,6 +29,10 @@ class Parser:
         self._latest_cpu_data = defaultdict(dict)
         self._latest_gpu_data = defaultdict(dict)
         self._latest_ai_data = defaultdict(dict)
+
+        # - top
+        self._top_single_cpu_data = defaultdict(dict)
+        self._top_multi_cpu_data = defaultdict(dict)
 
     # 로그인 구문분석
     def login_parse(self, html:str):
@@ -51,12 +55,12 @@ class Parser:
             passwrod_name
             )
     
-    # cpu 부분 데이터 구문 분석
-    def cpu_parse(self, html:str, page:str) -> dict:
+    # cpu 구문분석 메인처리자
+    def _cpu_parse_processor(self, html:str, parser:Callable[[str], Any]=None):
         soup = BeautifulSoup(markup=html, features="lxml")
         
         # 임시 사전 생성
-        cpu_data_temp = defaultdict(dict)
+        data_temp = defaultdict(dict)
         
         # 열(col) 개수만큼 반복합니다.
         for index, element in enumerate(
@@ -65,58 +69,30 @@ class Parser:
             ):
             
             (
-                system_sub_title,
-                model_name,
-                cpu_info,
-                uploaded_sub_title,
-                uploaded_time,
-                platform_sub_title,
-                platform_name,
-                single_core_sub_title,
-                single_core_score,
-                multi_core_sub_title,
-                multi_core_score,
-                gb6_data_url
-            ) = cpu_parse_handler(
+            keys,
+            values,
+            url
+            ) = parser(
                 element=element,
                 index=index
             )
+                
             
             # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url not in cpu_data_temp:
-                cpu_data_temp[gb6_data_url] = {
-                    system_sub_title: {
-                        "model name": model_name,
-                        "cpu info": cpu_info
-                    },
-                    uploaded_sub_title: {
-                        "default date": uploaded_time.strip(),
-                        "parsed date": extract_date(text=uploaded_time)
-                    },
-                    platform_sub_title: platform_name,
-                    "scores" : {
-                        single_core_sub_title: int(single_core_score),
-                        multi_core_sub_title: int(multi_core_score)
-                    }
-                }
+            if url not in data_temp:                
+                data_temp[url][keys[0]] = {"model name": values[0], "cpu info": values[1]}
+                data_temp[url][keys[1]] = {"default date": values[2].strip(), "parsed date": extract_date(text=values[2])}
+                data_temp[url][keys[2]] = values[3] # 플랫폼
+                data_temp[url]["scores"] = {keys[3]: int(values[4]), keys[4]: int(values[5])}
                 
-        
-        # 데이터 추가
-        self._add_data(
-            page=page,
-            data_name="GB6 CPU Results",
-            all_data=self._all_data,
-            data=self._cpu_data,
-            data_temp=cpu_data_temp
-            )
-        
+        return data_temp
 
-    # gpu 부분 데이터 구문 분석
-    def gpu_parse(self, html:str, page:str) -> dict:
+    # gpu 구문분석 메인처리자
+    def _gpu_parse_processor(self, html:str, parser:Callable[[str], Any]=None):
         soup = BeautifulSoup(markup=html, features="lxml")
         
         # 임시 사전 생성
-        gpu_data_temp = defaultdict(dict)
+        data_temp = defaultdict(dict)
         
         # 열(col) 개수만큼 반복합니다.
         for index, element in enumerate(
@@ -125,106 +101,122 @@ class Parser:
             ):
             
             (
-            system_sub_title,
-            model_name,
-            cpu_info,
-            uploaded_sub_title,
-            uploaded_time,
-            platform_sub_title,
-            platform_name,
-            api_sub_title,
-            api_name,
-            api_score_sub_title,
-            api_score,
-            gb6_data_url
-            ) = gpu_parse_handler(
+            keys,
+            values,
+            url
+            ) = parser(
                 element=element,
                 index=index
             )
                 
             
             # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url not in gpu_data_temp:
-                gpu_data_temp[gb6_data_url] = {
-                    system_sub_title: {
-                        "model name": model_name,
-                        "cpu info": cpu_info
-                    },
-                    uploaded_sub_title: {
-                        "default date": uploaded_time.strip(),
-                        "parsed date": extract_date(text=uploaded_time)
-                    },
-                    platform_sub_title: platform_name,
-                    api_sub_title: api_name,
-                    api_score_sub_title: int(api_score)
-                }
-                
-        
-        # 데이터 추가
-        self._add_data(
-            page=page,
-            data_name="GB6 GPU Results",
-            all_data=self._all_data,
-            data=self._gpu_data,
-            data_temp=gpu_data_temp
-            )
-        
-    
-    # ai 부분 데이터 구문 분석
-    def ai_parse(self, html:str, page:str) -> dict:
+            if url not in data_temp:                
+                data_temp[url][keys[0]] = {"model name": values[0], "cpu info": values[1]}
+                data_temp[url][keys[1]] = {"default date": values[2].strip(), "parsed date": extract_date(text=values[2])}
+                data_temp[url][keys[2]] = values[3] # 플랫폼
+                data_temp[url][keys[3]] = values[4] # api 이름
+                data_temp[url][keys[4]] = int(values[5])
+
+
+        return data_temp
+
+
+    # ai 구문분석 메인처리자
+    def _ai_parse_processor(self, html:str, selection:bool) -> dict:
         soup = BeautifulSoup(markup=html, features="lxml")
         
         # 임시 사전 생성
-        ai_data_temp = defaultdict(dict)
+        data_temp = defaultdict(dict)
         
         table = soup.find(name="table", attrs={"class": "table index-table"})
         tbody = table.find(name="tbody").find_all(name="tr") if table is not None else []
 
         # tr 개수만큼 반복합니다.
         for index, tr in enumerate(tbody, start=1):
-            
+            result = self._ai_parse_selection(soup=soup, tr=tr, index=index, data_temp=data_temp, selection=selection)
+        return result
+    
+
+    def _ai_parse_selection(self, soup: str, tr: str, index: int, data_temp: dict, selection: bool):
+        if selection:
             (
-            model_name_column,
-            framework_name_column,
-            framework_score_1_column,
-            framework_score_2_column,
-            framework_score_3_column,
-            model_name_row, 
-            model_ap_row,
-            framework_name_row,
-            framework_score_1_row,
-            framework_score_2_row,
-            framework_score_3_row,
-            gb6_data_url_row
-            ) = ai_parse_handler(
-                soup=soup,
-                tr=tr,
-                index=index
-            )
-            
-            
-            # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url_row not in ai_data_temp:
-                ai_data_temp[gb6_data_url_row] = {
-                    model_name_column: {
-                        "model name": model_name_row,
-                        "model ap": model_ap_row
-                    },
-                    framework_name_column: framework_name_row,
-                    "scores": {
-                        framework_score_1_column: int(framework_score_1_row),
-                        framework_score_2_column: int(framework_score_2_row),
-                        framework_score_3_column: int(framework_score_3_row)
-                    }
-                }
+                cols,
+                rows,
+                url
+            ) = ai_parse_handler(soup=soup, tr=tr, index=index)
+
+        else:
+            (
+                cols,
+                rows,
+                url
+            ) = latest_ai_parse_handler(soup=soup, tr=tr, index=index)
+
+        return self._ai_write_selection(data_temp=data_temp, cols=cols, rows=rows, url=url, selection=selection)
+
+    def _ai_write_selection(
+                self,
+                data_temp:dict=None,
+                cols:tuple=None,
+                rows:tuple=None,
+                url:str=None,
+                selection:bool=None
+            ):
         
+        # 중복 방지를 위해 고유값인 url을 사용합니다.
+        if url not in data_temp:
+            if selection:
+                data_temp[url][cols[0]] = {"model name": rows[0], "model ap": rows[1]}
+                data_temp[url][cols[1]] = rows[2]
+                data_temp[url]["scores"] = {cols[2]: int(rows[3]),
+                                            cols[3]: int(rows[4]), 
+                                            cols[4]: int(rows[5])}
+            else:
+                data_temp[url][cols[0]] = {"default date": rows[0], "parsed date": parse_full_date(text=rows[0])}
+                data_temp[url][cols[1]] = {"model name": rows[1], "model ap": rows[2]}
+                data_temp[url][cols[2]] = rows[3]
+                data_temp[url]["scores"] = {cols[3]: int(rows[4]),
+                                            cols[4]: int(rows[5]), 
+                                            cols[5]: int(rows[6])}
+                
+        return data_temp
+
+            
+
+    # cpu 부분 데이터 구문 분석
+    def cpu_parse(self, html:str, page:str) -> dict:               
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 CPU Results",
+            all_data=self._all_data,
+            data=self._cpu_data,
+            data_temp=self._cpu_parse_processor(html=html, parser=cpu_parse_handler)
+            )
+
+
+    # gpu 부분 데이터 구문 분석
+    def gpu_parse(self, html:str, page:str) -> dict:        
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 GPU Results",
+            all_data=self._all_data,
+            data=self._gpu_data,
+            data_temp=self._gpu_parse_processor(html=html, parser=gpu_parse_handler)
+            )
+
+
+    # ai 부분 데이터 구문 분석
+    def ai_parse(self, html:str, page:str) -> dict:
         # 데이터 추가
         self._add_data(
             page=page,
             data_name="GB6 AI Results",
             all_data=self._all_data,
             data=self._ai_data,
-            data_temp=ai_data_temp
+            data_temp=self._ai_parse_processor(html=html, selection=True)
             )
     
 
@@ -250,186 +242,60 @@ class Parser:
             data_temp=result_data,
             url=url
             )
-    
+
     # 최신 CPU 데이터 반영 구문분석
-    def latest_cpu_parse(self, html:str, page:str) -> dict:
-        soup = BeautifulSoup(markup=html, features="lxml")
-
-        # 임시 사전 생성
-        latest_cpu_data_temp = defaultdict(dict)
-        
-        # 열(col) 개수만큼 반복합니다.
-        for index, element in enumerate(
-            soup.find_all(name="div", attrs={"class": "col-12 list-col"}),
-            start=1
-            ):
-
-            (
-            system_sub_title,
-            model_name,
-            cpu_info,
-            uploaded_sub_title,
-            uploaded_time,
-            platform_sub_title,
-            platform_name,
-            single_core_sub_title,
-            single_core_score,
-            multi_core_sub_title,
-            multi_core_score,
-            gb6_data_url
-            ) = latest_cpu_parse_handler(
-                element=element,
-                index=index
-            )
-
-
-            # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url not in latest_cpu_data_temp:
-                latest_cpu_data_temp[gb6_data_url] = {
-                    system_sub_title: {
-                        "model name": model_name,
-                        "cpu info": cpu_info
-                    },
-                    uploaded_sub_title: {
-                        "default date": uploaded_time.strip(),
-                        "parsed date": extract_date(text=uploaded_time)
-                    },
-                    platform_sub_title: platform_name,
-                    "scores" : {
-                        single_core_sub_title: int(single_core_score),
-                        multi_core_sub_title: int(multi_core_score)
-                    }
-                }
-
+    def latest_cpu_parse(self, html:str, page:str) -> None:       
         # 데이터 추가
         self._add_data(
             page=page,
             data_name="GB6 LATEST CPU Results",
             all_data=self._all_data,
             data=self._latest_cpu_data,
-            data_temp=latest_cpu_data_temp
+            data_temp=self._cpu_parse_processor(html=html, parser=latest_or_top_cpu_parse_handler)
             )
-
 
     # 최신 GPU 데이터 반영 구문분석
-    def latest_gpu_parse(self, html:str, page:str) -> dict:
-        soup = BeautifulSoup(markup=html, features="lxml")
-
-        # 임시 사전 생성
-        latest_gpu_data_temp = defaultdict(dict)
-
-        # 열(col) 개수만큼 반복합니다.
-        for index, element in enumerate(
-            soup.find_all(name="div", attrs={"class": "col-12 list-col"}),
-            start=1
-            ):
-            
-            
-            (
-            system_sub_title,
-            model_name,
-            cpu_info,
-            uploaded_sub_title,
-            uploaded_time,
-            platform_sub_title,
-            platform_name,
-            api_sub_title,
-            api_name,
-            api_score_sub_title,
-            api_score,
-            gb6_data_url
-            ) = latest_gpu_parse_handler(
-                element=element,
-                index=index
-            )
-        
-            # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url not in latest_gpu_data_temp:
-                latest_gpu_data_temp[gb6_data_url] = {
-                    system_sub_title: {
-                        "model name": model_name,
-                        "cpu info": cpu_info
-                    },
-                    uploaded_sub_title: {
-                        "default date": uploaded_time.strip(),
-                        "parsed date": extract_date(text=uploaded_time)
-                    },
-                    platform_sub_title: platform_name,
-                    api_sub_title: api_name,
-                    api_score_sub_title: int(api_score)
-                }
-
+    def latest_gpu_parse(self, html:str, page:str) -> None:
         # 데이터 추가
         self._add_data(
             page=page,
             data_name="GB6 LATEST GPU Results",
             all_data=self._all_data,
             data=self._latest_gpu_data,
-            data_temp=latest_gpu_data_temp
+            data_temp=self._gpu_parse_processor(html=html, parser=latest_or_top_cpu_parse_handler)
             )
 
     # 최신 AI 데이터 반영 구문분석
-    def latest_ai_parse(self, html:str, page:str) -> dict:
-        soup = BeautifulSoup(markup=html, features="lxml")
-
-        # 임시 사전 생성
-        latest_ai_data_temp = defaultdict(dict)
-        
-        table = soup.find(name="table", attrs={"class": "table index-table"})
-        tbody = table.find(name="tbody").find_all(name="tr") if table is not None else []
-        
-        # tr 개수만큼 반복합니다.
-        for index, tr in enumerate(tbody, start=1):
-
-            (
-            uploaded_name_column,
-            model_name_column,
-            framework_name_column,
-            framework_score_1_column,
-            framework_score_2_column,
-            framework_score_3_column,
-            uploaded_name_row,
-            model_name_row, 
-            model_ap_row,
-            framework_name_row,
-            framework_score_1_row,
-            framework_score_2_row,
-            framework_score_3_row,
-            gb6_data_url_row
-            ) = latest_ai_parse_handler(
-                soup=soup,
-                tr=tr,
-                index=index
-            )
-            
-            
-            # 중복 방지를 위해 고유값인 url을 사용합니다.
-            if gb6_data_url_row not in latest_ai_data_temp:
-                latest_ai_data_temp[gb6_data_url_row] = {
-                    model_name_column: {
-                        "model name": model_name_row,
-                        "model ap": model_ap_row
-                    },
-                    uploaded_name_column: {
-                        "default date": uploaded_name_row,
-                        "parsed date": parse_full_date(text=uploaded_name_row)
-                    },
-                    framework_name_column: framework_name_row,
-                    "scores": {
-                        framework_score_1_column: int(framework_score_1_row),
-                        framework_score_2_column: int(framework_score_2_row),
-                        framework_score_3_column: int(framework_score_3_row)
-                    }
-                }
-
-
+    def latest_ai_parse(self, html:str, page:str) -> None:
         # 데이터 추가
         self._add_data(
             page=page,
             data_name="GB6 LATEST AI Results",
             all_data=self._all_data,
             data=self._latest_ai_data,
-            data_temp=latest_ai_data_temp
+            data_temp=self._ai_parse_processor(html=html, selection=False)
+            )
+
+    # 가장 높은 싱글코어 데이터 구문분석
+    def top_single_cpu_parse(self, html:str, page:str) -> None:
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 TOP Single Results",
+            all_data=self._all_data,
+            data=self._top_single_cpu_data,
+            data_temp=self._cpu_parse_processor(html=html)
+            )
+
+    # 가장 높은 멀티코어 데이터 구문분석
+    def top_multi_cpu_parse(self, html:str, page:str) -> None:
+        # 데이터 추가
+        self._add_data(
+            page=page,
+            data_name="GB6 TOP Multi Results",
+            all_data=self._all_data,
+            data=self._top_multi_cpu_data,
+            data_temp=self._cpu_parse_processor(html=html)
             )
 
     # 데이터 추가 함수
@@ -449,38 +315,50 @@ class Parser:
                 data[page_or_url] = data_temp
                 
     
+    # 데이터를 체크합니다.
+    def _emit_data_check(self, data:dict):
+        return data if len(data.keys()) != 0 else None
+
     # 모든 데이터를 반환합니다.
     def emit_all_data(self):
-        return self._all_data if len(self._all_data.keys()) != 0 else None
+        return self._emit_data_check(self._all_data)
     
     # CPU 데이터 반환
     def emit_cpu_data(self):
-        return self._cpu_data if len(self._cpu_data.keys()) != 0 else None
+        return self._emit_data_check(self._cpu_data)
     
     # GPU 데이터 반환
     def emit_gpu_data(self):
-        return self._gpu_data if len(self._gpu_data.keys()) != 0 else None
+        return self._emit_data_check(self._gpu_data)
     
     # AI 데이터 반환
     def emit_ai_data(self):
-        return self._ai_data if len(self._ai_data.keys()) != 0 else None
+        return self._emit_data_check(self._ai_data)
     
     # CPU DETAILS 데이터 반환
     def emit_cpu_details_data(self):
-        return self._cpu_details_data if len(self._cpu_details_data.keys()) != 0 else None
+        return self._emit_data_check(self._cpu_details_data)
 
     # GPU DETAILS 데이터 반환
     def emit_gpu_details_data(self):
-        return self._gpu_details_data if len(self._gpu_details_data.keys()) != 0 else None
+        return self._emit_data_check(self._gpu_details_data)
 
     # LATEST CPU 데이터 반환
     def emit_latest_cpu_data(self):
-        return self._latest_cpu_data if len(self._latest_cpu_data.keys()) != 0 else None
+        return self._emit_data_check(self._latest_cpu_data)
     
     # LATEST GPU 데이터 반환
     def emit_latest_gpu_data(self):
-        return self._latest_gpu_data if len(self._latest_gpu_data.keys()) != 0 else None
+        return self._emit_data_check(self._latest_gpu_data)
     
     # LATEST AI 데이터 반환
     def emit_latest_ai_data(self):
-        return self._latest_ai_data if len(self._latest_ai_data.keys()) != 0 else None
+        return self._emit_data_check(self._latest_ai_data)
+
+    # TOP CPU SINGLE 데이터 반환
+    def emit_top_single_cpu_data(self):
+        return self._emit_data_check(self._top_single_cpu_data)
+    
+    # TOP CPU MULTI 데이터 반환
+    def emit_top_multi_cpu_data(self):
+        return self._emit_data_check(self._top_multi_cpu_data)

@@ -367,6 +367,46 @@ class Geekbench6:
             type="latest ai"
             )
     
+    # 싱글코어 높은 점수 정렬 데이터 가져오기
+    async def cpu_top_single_fetch(
+        self,
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
+        ) -> None:
+        
+        # 비동기 요청 보내기
+        await self._fetch(
+            url=self._gb6_urls["gb6_top_single_url"],
+            headers=self._gb6_headers,
+            payload_change=True,
+            start_page=start_page,
+            end_page=end_page,
+            delay=delay,
+            parser=self._parser.top_single_cpu_parse,
+            type="cpu top single"            
+            )
+
+    # 멀티코어 높은 점수 정렬 데이터 가져오기
+    async def cpu_top_multi_fetch(
+        self,
+        start_page:int=1,
+        end_page:int=1,
+        delay:float=3
+        ) -> None:
+        
+        # 비동기 요청 보내기
+        await self._fetch(
+            url=self._gb6_urls["gb6_top_multi_url"],
+            headers=self._gb6_headers,
+            payload_change=True,
+            start_page=start_page,
+            end_page=end_page,
+            delay=delay,
+            parser=self._parser.top_multi_cpu_parse,
+            type="cpu top multi"
+            )
+    
     # 모든 데이터 반환 - CPU, GPU, AI...
     def get_all_data(self):
         return self._parser.emit_all_data()
@@ -402,6 +442,14 @@ class Geekbench6:
     # 단일 데이터 반환 - LATEST AI
     def get_latest_ai_data(self):
         return self._parser.emit_latest_ai_data()
+
+    # 단일 데이터 반환 - TOP SINGLE CPU
+    def get_top_cpu_single_data(self):
+        return self._parser.emit_top_single_cpu_data()
+
+    # 단일 데이터 반환 - TOP MULTI CPU
+    def get_top_cpu_multi_data(self):
+        return self._parser.emit_top_multi_cpu_data()
 
     # 세션 종료
     async def session_close(self):
