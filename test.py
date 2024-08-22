@@ -12,7 +12,7 @@ async def run():
             end_page=1,
             delay=2
         ),
-        gb6.ai_fetch(
+        gb6.latest_gpu_fetch(
             start_page=1,
             end_page=1,
             delay=2
@@ -47,9 +47,9 @@ async def run():
     # indent_print(gb6.get_latest_cpu_data())
     # indent_print(gb6.get_cpu_data())
     # indent_print(gb6.get_gpu_data())
-    indent_print(gb6.get_ai_data())
-    indent_print(gb6.get_latest_ai_data())
-    
+    # indent_print(gb6.get_ai_data())
+    # indent_print(gb6.get_latest_ai_data())
+    indent_print(gb6.get_latest_gpu_data())
     
     # 세션 종료
     await gb6.session_close()

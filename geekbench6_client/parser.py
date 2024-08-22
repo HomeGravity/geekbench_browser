@@ -262,7 +262,7 @@ class Parser:
             data_name="GB6 LATEST GPU Results",
             all_data=self._all_data,
             data=self._latest_gpu_data,
-            data_temp=self._gpu_parse_processor(html=html, parser=latest_or_top_cpu_parse_handler)
+            data_temp=self._gpu_parse_processor(html=html, parser=latest_gpu_parse_handler)
             )
 
     # 최신 AI 데이터 반영 구문분석
