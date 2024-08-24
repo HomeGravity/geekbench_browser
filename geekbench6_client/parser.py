@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from collections import defaultdict
-from typing import Callable, Any, Union
-
+from typing import Callable, Any
+import json
 
 from .utils import *
 from .parser_handlers.login_parse_handler import login_parse_handler
@@ -12,27 +12,30 @@ from .parser_handlers.ai_parse_handler import ai_parse_handler, latest_ai_parse_
 
 class Parser:
     def __init__(self) -> None:
-        # 모든 데이터 저장
-        self._all_data = defaultdict(dict)
-        
-        # 단일 데이터 저장
-        # - search (검색)
-        self._cpu_data = defaultdict(dict)
-        self._gpu_data = defaultdict(dict)
-        self._ai_data = defaultdict(dict)
+        self._data = defaultdict(lambda: defaultdict(dict))
+        self._initialize_data_structure()
 
-        # - 상세한
-        self._cpu_details_data = defaultdict(dict)
-        self._gpu_details_data = defaultdict(dict)
-        
-        # - latest (최신)
-        self._latest_cpu_data = defaultdict(dict)
-        self._latest_gpu_data = defaultdict(dict)
-        self._latest_ai_data = defaultdict(dict)
-
-        # - top
-        self._top_single_cpu_data = defaultdict(dict)
-        self._top_multi_cpu_data = defaultdict(dict)
+    # 데이터 구조화 초기화
+    def _initialize_data_structure(self):
+        self._data['all'] = defaultdict(dict)
+        self._data['search'] = {
+            'cpu': defaultdict(dict),
+            'gpu': defaultdict(dict),
+            'ai': defaultdict(dict),
+        }
+        self._data['details'] = {
+            'cpu': defaultdict(dict),
+            'gpu': defaultdict(dict),
+        }
+        self._data['latest'] = {
+            'cpu': defaultdict(dict),
+            'gpu': defaultdict(dict),
+            'ai': defaultdict(dict),
+        }
+        self._data['top'] = {
+            'single_cpu': defaultdict(dict),
+            'multi_cpu': defaultdict(dict),
+        }
 
     # 로그인 구문분석
     def login_parse(self, html:str):
@@ -185,37 +188,37 @@ class Parser:
             
 
     # cpu 부분 데이터 구문 분석
-    def cpu_parse(self, html:str, page:str) -> dict:               
+    def cpu_search_parse(self, html:str, page:str) -> dict:               
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 CPU Results",
-            all_data=self._all_data,
-            data=self._cpu_data,
+            data_name="GB6 CPU Search Results",
+            all_data=self._data["all"],
+            data=self._data["search"]["cpu"],
             data_temp=self._cpu_parse_processor(html=html, parser=cpu_parse_handler)
             )
 
 
     # gpu 부분 데이터 구문 분석
-    def gpu_parse(self, html:str, page:str) -> dict:        
+    def gpu_search_parse(self, html:str, page:str) -> dict:        
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 GPU Results",
-            all_data=self._all_data,
-            data=self._gpu_data,
+            data_name="GB6 GPU Search Results",
+            all_data=self._data["all"],
+            data=self._data["search"]["gpu"],
             data_temp=self._gpu_parse_processor(html=html, parser=gpu_parse_handler)
             )
 
 
     # ai 부분 데이터 구문 분석
-    def ai_parse(self, html:str, page:str) -> dict:
+    def ai_search_parse(self, html:str, page:str) -> dict:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 AI Results",
-            all_data=self._all_data,
-            data=self._ai_data,
+            data_name="GB6 AI Search Results",
+            all_data=self._data["all"],
+            data=self._data["search"]["ai"],
             data_temp=self._ai_parse_processor(html=html, selection=True)
             )
     
@@ -226,8 +229,8 @@ class Parser:
         # 데이터 추가
         self._add_data(
             data_name="GB6 CPU DETAILS Results",
-            all_data=self._all_data,
-            data=self._cpu_details_data,
+            all_data=self._data["all"],
+            data=self._data["details"]["cpu"],
             data_temp=result_data,
             url=url
             )
@@ -237,8 +240,8 @@ class Parser:
         # 데이터 추가
         self._add_data(
             data_name="GB6 GPU DETAILS Results",
-            all_data=self._all_data,
-            data=self._gpu_details_data,
+            all_data=self._data["all"],
+            data=self._data["details"]["gpu"],
             data_temp=result_data,
             url=url
             )
@@ -249,8 +252,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 LATEST CPU Results",
-            all_data=self._all_data,
-            data=self._latest_cpu_data,
+            all_data=self._data["all"],
+            data=self._data["latest"]["cpu"],
             data_temp=self._cpu_parse_processor(html=html, parser=latest_or_top_cpu_parse_handler)
             )
 
@@ -260,8 +263,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 LATEST GPU Results",
-            all_data=self._all_data,
-            data=self._latest_gpu_data,
+            all_data=self._data["all"],
+            data=self._data["latest"]["gpu"],
             data_temp=self._gpu_parse_processor(html=html, parser=latest_gpu_parse_handler)
             )
 
@@ -271,8 +274,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 LATEST AI Results",
-            all_data=self._all_data,
-            data=self._latest_ai_data,
+            all_data=self._data["all"],
+            data=self._data["latest"]["ai"],
             data_temp=self._ai_parse_processor(html=html, selection=False)
             )
 
@@ -282,8 +285,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 TOP Single Results",
-            all_data=self._all_data,
-            data=self._top_single_cpu_data,
+            all_data=self._data["all"],
+            data=self._data["top"]["single_cpu"],
             data_temp=self._cpu_parse_processor(html=html)
             )
 
@@ -293,8 +296,8 @@ class Parser:
         self._add_data(
             page=page,
             data_name="GB6 TOP Multi Results",
-            all_data=self._all_data,
-            data=self._top_multi_cpu_data,
+            all_data=self._data["all"],
+            data=self._data["top"]["multi_cpu"],
             data_temp=self._cpu_parse_processor(html=html)
             )
 
@@ -316,49 +319,15 @@ class Parser:
                 
     
     # 데이터를 체크합니다.
-    def _emit_data_check(self, data:dict):
-        return data if len(data.keys()) != 0 else None
+    def _emit_data_check(self, data:dict) -> dict:
+        # return data if len(data.keys()) != 0 else None
+        return json.dumps(data, ensure_ascii=False, indent=4) if len(data.keys()) != 0 else None
 
-    # 모든 데이터를 반환합니다.
-    def emit_all_data(self):
-        return self._emit_data_check(self._all_data)
-    
-    # CPU 데이터 반환
-    def emit_cpu_data(self):
-        return self._emit_data_check(self._cpu_data)
-    
-    # GPU 데이터 반환
-    def emit_gpu_data(self):
-        return self._emit_data_check(self._gpu_data)
-    
-    # AI 데이터 반환
-    def emit_ai_data(self):
-        return self._emit_data_check(self._ai_data)
-    
-    # CPU DETAILS 데이터 반환
-    def emit_cpu_details_data(self):
-        return self._emit_data_check(self._cpu_details_data)
 
-    # GPU DETAILS 데이터 반환
-    def emit_gpu_details_data(self):
-        return self._emit_data_check(self._gpu_details_data)
-
-    # LATEST CPU 데이터 반환
-    def emit_latest_cpu_data(self):
-        return self._emit_data_check(self._latest_cpu_data)
-    
-    # LATEST GPU 데이터 반환
-    def emit_latest_gpu_data(self):
-        return self._emit_data_check(self._latest_gpu_data)
-    
-    # LATEST AI 데이터 반환
-    def emit_latest_ai_data(self):
-        return self._emit_data_check(self._latest_ai_data)
-
-    # TOP CPU SINGLE 데이터 반환
-    def emit_top_single_cpu_data(self):
-        return self._emit_data_check(self._top_single_cpu_data)
-    
-    # TOP CPU MULTI 데이터 반환
-    def emit_top_multi_cpu_data(self):
-        return self._emit_data_check(self._top_multi_cpu_data)
+    # 데이터를 반환합니다.
+    def emit_data(self, access_keys:list) -> dict:
+        if isinstance(access_keys, list) and len(access_keys) >= 2:
+            return self._emit_data_check(data=self._data[access_keys[0]][access_keys[1]]) # 각 키로 접근
+            
+        else:
+            return self._emit_data_check(data=self._data[access_keys[0]])  # 단일 키로 접근

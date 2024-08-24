@@ -7,14 +7,14 @@ async def run():
     # await gb6.login(id="id", passwrod="passwrod")
     
     await asyncio.gather(
-        gb6.latest_ai_fetch(
+        gb6.cpu_search_fetch(
             start_page=1,
-            end_page=1,
+            end_page=2,
             delay=2
         ),
         gb6.latest_gpu_fetch(
             start_page=1,
-            end_page=1,
+            end_page=2,
             delay=2
         )
     )
@@ -42,14 +42,14 @@ async def run():
     # print(android)
     # print(vulkan)
     
-    # indent_print(gb6.get_cpu_details_data())
-    # indent_print(gb6.get_gpu_details_data())
-    # indent_print(gb6.get_latest_cpu_data())
-    # indent_print(gb6.get_cpu_data())
-    # indent_print(gb6.get_gpu_data())
-    # indent_print(gb6.get_ai_data())
-    # indent_print(gb6.get_latest_ai_data())
-    indent_print(gb6.get_latest_gpu_data())
+    # print(gb6.get_cpu_details_data())
+    # print(gb6.get_gpu_details_data())
+    # print(gb6.get_latest_cpu_data())
+    print(gb6.get_cpu_search_data())
+    # print(gb6.get_gpu_search_data())
+    # print(gb6.get_ai_search_data())
+    # print(gb6.get_latest_ai_data())
+    print(gb6.get_latest_gpu_data())
     
     # 세션 종료
     await gb6.session_close()

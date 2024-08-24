@@ -38,9 +38,20 @@ class Geekbench6:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate, br, zstd",
             "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Cache-control": "max-age=0",
             "Connection": "keep-alive",
+            "Dnt": "1",
             "Host": "browser.geekbench.com",
             "Referer:": "https://browser.geekbench.com/",
+            "Sec-Ch-Ua": '"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "cross-site",
+            "Sec-Fetch-User": "?1",
+            "Sec-Gpc": "1",
+            "Upgrade-Insecure-Requests": "1",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         }
         
@@ -60,7 +71,8 @@ class Geekbench6:
             url=self._gb6_urls["login_session_url"],
             headers=self._gb6_headers
             ) as response:
-    
+            response.raise_for_status()
+            
             (
             param, 
             token, 
@@ -88,6 +100,8 @@ class Geekbench6:
             headers=self._gb6_headers,
             data=payload
             ) as response:
+            response.raise_for_status()
+            
             pass
             
             
@@ -124,6 +138,8 @@ class Geekbench6:
                 headers=headers,
                 params=payload
                 ) as response:
+                
+                response.raise_for_status()
 
                 text = await response.text(encoding="utf-8")
                 result = parser(
@@ -132,7 +148,7 @@ class Geekbench6:
                     )
                 
                 # debug
-                print(f"search: {payload["q"]} - type: {payload["k"]} - page: {payload["page"]}") if not payload_change else print(f"type: {type} - page: {payload["page"]}")
+                print(f"search: {payload["q"]} - type: {type} - page: {payload["page"]}") if not payload_change else print(f"type: {type} - page: {payload["page"]}")
 
                 
                 if check_for_last_page(text):
@@ -143,8 +159,32 @@ class Geekbench6:
         
         return result
 
+    #  json 전용
+    async def _json_fetch(self, url:str, extension:str=None):
+        async with self._session.get(
+            url=url+extension,
+            headers=self._gb6_headers
+            ) as response:
+            response.raise_for_status()
+            
+            # json으로 변환
+            return await response.json()
+
+
+    # 상세한 정보 가져오기
+    async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None):
+        for handling, url in enumerate(urls, start=1):
+            if type in url:
+                    
+                result = await self._json_fetch(url=url, extension=".gb6")
+                parser(url=url, result_data=result)
+                
+                # debug
+                print(f"type: details {type.replace("compute", "gpu")} - handling: {handling}")
+                await asyncio.sleep(delay=delay)
+
     # 가져오기
-    async def cpu_fetch(
+    async def cpu_search_fetch(
         self,
         start_page:int=1,
         end_page:int=1,
@@ -161,13 +201,14 @@ class Geekbench6:
             end_page=end_page,
             model_name=self._model_name,
             delay=delay,
-            parser=self._parser.cpu_parse
+            parser=self._parser.cpu_search_parse,
+            type="search cpu"
             )
         
 
                 
     # 가져오기
-    async def gpu_fetch(
+    async def gpu_search_fetch(
         self,
         start_page:int=1,
         end_page:int=1,
@@ -184,12 +225,13 @@ class Geekbench6:
             end_page=end_page,
             model_name=self._model_name,
             delay=delay,
-            parser=self._parser.gpu_parse
+            parser=self._parser.gpu_search_parse,
+            type="search gpu"
             )
 
         
     # 가져오기
-    async def ai_fetch(
+    async def ai_search_fetch(
         self,
         start_page:int=1,
         end_page:int=1,
@@ -206,31 +248,10 @@ class Geekbench6:
             end_page=end_page,
             model_name=self._model_name,
             delay=delay,
-            parser=self._parser.ai_parse
+            parser=self._parser.ai_search_parse,
+            type="search ai"
             )
     
-    #  json 전용
-    async def _json_fetch(self, url:str, extension:str=None):
-        async with self._session.get(
-            url=url+extension,
-            headers=self._gb6_headers
-            ) as response:
-            
-            # json으로 변환
-            return await response.json()
-    
-    # 상세한 정보 가져오기
-    async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None):
-        total_urls = len(urls)  # 전체 URL 수를 미리 계산
-        for handling, url in enumerate(urls, start=1):
-            if type in url:
-                    
-                result = await self._json_fetch(url=url, extension=".gb6")
-                parser(url=url, result_data=result)
-                
-                # debug
-                print(f"type: {type} - url: {url} - handling: {handling}/{total_urls}")
-                await asyncio.sleep(delay=delay)
     
     # CPU 상세한 정보
     async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3):
@@ -409,47 +430,47 @@ class Geekbench6:
     
     # 모든 데이터 반환 - CPU, GPU, AI...
     def get_all_data(self):
-        return self._parser.emit_all_data()
+        return self._parser.emit_data(access_keys=["all"])
     
     # 단일 데이터 반환 - CPU
-    def get_cpu_data(self):
-        return self._parser.emit_cpu_data()
+    def get_cpu_search_data(self):
+        return self._parser.emit_data(access_keys=["search", "cpu"])
     
     # 단일 데이터 반환 - GPU
-    def get_gpu_data(self):
-        return self._parser.emit_gpu_data()
+    def get_gpu_search_data(self):
+        return self._parser.emit_data(access_keys=["search", "gpu"])
     
     # 단일 데이터 반환 - AI
-    def get_ai_data(self):
-        return self._parser.emit_ai_data()
+    def get_ai_search_data(self):
+        return self._parser.emit_data(access_keys=["search", "ai"])
     
     # 단일 데이터 반환 - CPU DETAILS
     def get_cpu_details_data(self):
-        return self._parser.emit_cpu_details_data()
+        return self._parser.emit_data(access_keys=["details", "cpu"])
     
     # 단일 데이터 반환 - GPU DETAILS
     def get_gpu_details_data(self):
-        return self._parser.emit_gpu_details_data()
+        return self._parser.emit_data(access_keys=["details", "gpu"])
     
     # 단일 데이터 반환 - LATEST CPU
     def get_latest_cpu_data(self):
-        return self._parser.emit_latest_cpu_data()
+        return self._parser.emit_data(access_keys=["latest", "cpu"])
 
     # 단일 데이터 반환 - LATEST GPU
     def get_latest_gpu_data(self):
-        return self._parser.emit_latest_gpu_data()
+        return self._parser.emit_data(access_keys=["latest", "gpu"])
     
     # 단일 데이터 반환 - LATEST AI
     def get_latest_ai_data(self):
-        return self._parser.emit_latest_ai_data()
+        return self._parser.emit_data(access_keys=["latest", "ai"])
 
     # 단일 데이터 반환 - TOP SINGLE CPU
     def get_top_cpu_single_data(self):
-        return self._parser.emit_top_single_cpu_data()
+        return self._parser.emit_data(access_keys=["top", "single_cpu"])
 
     # 단일 데이터 반환 - TOP MULTI CPU
     def get_top_cpu_multi_data(self):
-        return self._parser.emit_top_multi_cpu_data()
+        return self._parser.emit_data(access_keys=["top", "multi_cpu"])
 
     # 세션 종료
     async def session_close(self):

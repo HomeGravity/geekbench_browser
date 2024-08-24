@@ -29,12 +29,6 @@ def parse_full_date(text:str) -> str:
         return None  # 날짜 형식이 아닐 경우 None 반환
 
 
-# 들여쓰기 프린트
-def indent_print(text:str, indent:int=4): # indent를 4로 설정
-    import json
-    print(json.dumps(text, indent=indent))
-
-
 # 마지막 페이지 확인
 def check_for_last_page(text:str) -> bool:
     from bs4 import BeautifulSoup
