@@ -1,5 +1,5 @@
-from geekbench6_client.api import GeekbenchBrowserAPI
-from geekbench6_client.utils import *
+from geekbench_client.api import GeekbenchBrowserAPI
+from geekbench_client.utils import *
 import asyncio
 
 async def run():
