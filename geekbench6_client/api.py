@@ -6,8 +6,21 @@ from .parser import Parser
 from .utils import *
 
 
-class Geekbench6:
-    def __init__(self, model_name:str) -> None:
+class GeekbenchBrowserAPI():
+    def __init__(self, search_target:str) -> None:
+        # 요청 데이터를 초기화 합니다.
+        self._initialize_fetch_data()
+        
+        # 비동기 HTTP 객체 초기화
+        self._session = aiohttp.ClientSession()
+        # 파싱 객체 초기화
+        self._parser = Parser()
+        
+        self._search_target = search_target # 하나의 객체는 하나의 검색어만 수집할 수 있도록 합니다.
+    
+    
+    # 요청 데이터 초기화
+    def _initialize_fetch_data(self):
         # url
         self._gb6_urls = {
             "gb6_base_url": "https://browser.geekbench.com/search?",
@@ -54,14 +67,6 @@ class Geekbench6:
             "Upgrade-Insecure-Requests": "1",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         }
-        
-        # 비동기 HTTP 객체 초기화
-        self._session = aiohttp.ClientSession()
-        # 파싱 객체 초기화
-        self._parser = Parser()
-        
-        # 인스턴스 변수
-        self._model_name = model_name # 하나의 객체는 하나의 모델만 수집할 수 있도록 합니다.
     
     
     # 로그인
@@ -114,7 +119,7 @@ class Geekbench6:
         payload_change:bool=None,
         start_page:int=None,
         end_page:int=None,
-        model_name:str=None,
+        search_target:str=None,
         delay:float=None,
         parser:Callable[[str], Any]=None,
         type:str=None
@@ -128,7 +133,7 @@ class Geekbench6:
                     "k": search_k,
                     "utf8": "✓",
                     "page": page,
-                    "q": model_name 
+                    "q": search_target 
                     } if not payload_change else {
                         "page": page
                         }
@@ -199,7 +204,7 @@ class Geekbench6:
             payload_change=False,
             start_page=start_page,
             end_page=end_page,
-            model_name=self._model_name,
+            search_target=self._search_target,
             delay=delay,
             parser=self._parser.cpu_search_parse,
             type="search cpu"
@@ -223,7 +228,7 @@ class Geekbench6:
             payload_change=False,
             start_page=start_page,
             end_page=end_page,
-            model_name=self._model_name,
+            search_target=self._search_target,
             delay=delay,
             parser=self._parser.gpu_search_parse,
             type="search gpu"
@@ -246,7 +251,7 @@ class Geekbench6:
             payload_change=False,
             start_page=start_page,
             end_page=end_page,
-            model_name=self._model_name,
+            search_target=self._search_target,
             delay=delay,
             parser=self._parser.ai_search_parse,
             type="search ai"
