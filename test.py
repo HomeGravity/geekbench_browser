@@ -42,13 +42,13 @@ async def run():
     # print(android)
     # print(vulkan)
     
-    # print(gb6.get_cpu_details_data())
-    # print(gb6.get_gpu_details_data())
-    # print(gb6.get_latest_cpu_data())
-    print(gb6.get_cpu_search_data())
-    # print(gb6.get_gpu_search_data())
-    # print(gb6.get_ai_search_data())
-    # print(gb6.get_latest_ai_data())
+    print(gb6.get_details_cpu_data())
+    print(gb6.get_details_gpu_data())
+    print(gb6.get_latest_cpu_data())
+    print(gb6.get_search_cpu_data())
+    print(gb6.get_search_gpu_data())
+    print(gb6.get_search_ai_data())
+    print(gb6.get_latest_ai_data())
     print(gb6.get_latest_gpu_data())
     
     # 세션 종료

@@ -272,7 +272,7 @@ class Geekbench6:
         )
     
     # 안드로이드 벤치마크 차트 json
-    async def android_chart_json_fetch_and_get(self) -> dict:
+    async def android_chart_json_fetch_and_get_data(self) -> dict:
         return await self._json_fetch(
             url=self._gb6_urls["gb6_android_chart_url"],
             extension=".json"
@@ -433,23 +433,23 @@ class Geekbench6:
         return self._parser.emit_data(access_keys=["all"])
     
     # 단일 데이터 반환 - CPU
-    def get_cpu_search_data(self):
+    def get_search_cpu_data(self):
         return self._parser.emit_data(access_keys=["search", "cpu"])
     
     # 단일 데이터 반환 - GPU
-    def get_gpu_search_data(self):
+    def get_search_gpu_data(self):
         return self._parser.emit_data(access_keys=["search", "gpu"])
     
     # 단일 데이터 반환 - AI
-    def get_ai_search_data(self):
+    def get_search_ai_data(self):
         return self._parser.emit_data(access_keys=["search", "ai"])
     
     # 단일 데이터 반환 - CPU DETAILS
-    def get_cpu_details_data(self):
+    def get_details_cpu_data(self):
         return self._parser.emit_data(access_keys=["details", "cpu"])
     
     # 단일 데이터 반환 - GPU DETAILS
-    def get_gpu_details_data(self):
+    def get_details_gpu_data(self):
         return self._parser.emit_data(access_keys=["details", "gpu"])
     
     # 단일 데이터 반환 - LATEST CPU
