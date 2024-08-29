@@ -55,14 +55,14 @@ async def run():
     # print(android)
     # print(vulkan)
     
-    await gb6.ai_search_fetch(start_page=1, end_page=1, delay=2)
+    await gb6.cpu_details_fetch(urls=[""], delay=2, select_parse=False)
     
     # print(gb6.get_details_cpu_data())
     # print(gb6.get_details_gpu_data())
     # print(gb6.get_latest_cpu_data())
     # print(gb6.get_search_cpu_data())
     # print(gb6.get_search_gpu_data())
-    print(gb6.get_search_ai_data())
+    # print(gb6.get_search_ai_data())
     # print(gb6.get_latest_ai_data())
     # print(gb6.get_latest_gpu_data())
     # print(gb6.get_search_cpu_data())

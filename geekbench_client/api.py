@@ -177,12 +177,22 @@ class GeekbenchBrowserAPI():
 
 
     # 상세한 정보 가져오기
-    async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None):
+    async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None, select_parse:bool=None):
         for handling, url in enumerate(urls, start=1):
             if type in url:
+                
+                if select_parse:
+                    result = await self._json_fetch(url=url, extension=".gb6")
+                    parser(url=url, result_data=result, select_parse=select_parse)
                     
-                result = await self._json_fetch(url=url, extension=".gb6")
-                parser(url=url, result_data=result)
+                else:
+                    async with self._session.get(
+                        url=url,
+                        headers=self._gb6_headers
+                        ) as response:
+                        
+                        response.raise_for_status()
+                        parser(url=url, html=await response.text(encoding="utf-8"), select_parse=select_parse)
                 
                 # debug
                 print(f"type: details {type.replace("compute", "gpu")} - handling: {handling}")
@@ -259,21 +269,23 @@ class GeekbenchBrowserAPI():
     
     
     # CPU 상세한 정보
-    async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3):
+    async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3, select_parse:bool=False):
         await self._details_fetch(
             urls=urls,
             delay=delay,
             parser=self._parser.cpu_details_parse,
-            type="cpu"
+            type="cpu",
+            select_parse=select_parse
         )
 
     # GPU 상세한 정보
-    async def gpu_details_fetch(self, urls:Union[list, tuple], delay:float=3):
+    async def gpu_details_fetch(self, urls:Union[list, tuple], delay:float=3, select_parse:bool=False):
         await self._details_fetch(
             urls=urls,
             delay=delay,
             parser=self._parser.gpu_details_parse,
-            type="compute"
+            type="compute",
+            select_parse=select_parse
         )
     
     # 안드로이드 벤치마크 차트 json

@@ -5,7 +5,7 @@ import json
 
 from .utils import *
 from .parser_handlers.login_parse_handler import login_parse_handler
-from .parser_handlers.cpu_parse_handler import cpu_parse_handler, latest_or_top_cpu_parse_handler
+from .parser_handlers.cpu_parse_handler import cpu_parse_handler, latest_or_top_cpu_parse_handler, details_cpu_parse_handler
 from .parser_handlers.gpu_parse_handler import gpu_parse_handler, latest_gpu_parse_handler
 from .parser_handlers.ai_parse_handler import ai_parse_handler, latest_ai_parse_handler
 
@@ -225,27 +225,34 @@ class Parser:
 
     # 상세한 정보 구문분석
     # CPU 상세한
-    def cpu_details_parse(self, url:str, result_data:dict):
-        # 데이터 추가
-        self._add_data(
-            data_name="GB6 CPU DETAILS Results",
-            all_data=self._data["all"],
-            data=self._data["details"]["cpu"],
-            data_temp=result_data,
-            url=url
-            )
-        
-    # GPU 상세한
-    def gpu_details_parse(self, url:str, result_data:dict):
-        # 데이터 추가
-        self._add_data(
-            data_name="GB6 GPU DETAILS Results",
-            all_data=self._data["all"],
-            data=self._data["details"]["gpu"],
-            data_temp=result_data,
-            url=url
-            )
+    def cpu_details_parse(self, url:str=None, html:set=None, result_data:dict=None, select_parse:bool=None):
+        if select_parse:
+            # 데이터 추가
+            self._add_data(
+                data_name="GB6 CPU DETAILS Results",
+                all_data=self._data["all"],
+                data=self._data["details"]["cpu"],
+                data_temp=result_data,
+                url=url
+                )
+        else:
+            soup=BeautifulSoup(markup=html, features="lxml")
+            details_cpu_parse_handler(soup=soup)
 
+    # GPU 상세한
+    def gpu_details_parse(self, url:str=None, html:set=None, result_data:dict=None, select_parse:bool=None):
+        if select_parse:
+            # 데이터 추가
+            self._add_data(
+                data_name="GB6 GPU DETAILS Results",
+                all_data=self._data["all"],
+                data=self._data["details"]["gpu"],
+                data_temp=result_data,
+                url=url
+                )
+        else:
+            print("gpu parse 추가 필요")
+            
     # 최신 CPU 데이터 반영 구문분석
     def latest_cpu_parse(self, html:str, page:str) -> None:       
         # 데이터 추가
