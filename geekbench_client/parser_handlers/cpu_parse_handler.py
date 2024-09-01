@@ -1,4 +1,5 @@
 from collections import defaultdict
+from geekbench_client.utils import format_date
 
 # 검색 cpu 데이터 parse 처리
 def cpu_parse_handler(element:str, index:int) -> str:
@@ -179,7 +180,7 @@ def _basic_handler(parent:str):
     names = cpus.find_all(name="div", attrs={"class": "note"})
     scores = cpus.find_all(name="div", attrs={"class": "score"})
     for col, row in zip(names, scores):
-        data_temp["scores"][col.get_text(strip=True)] = row.get_text(strip=True) # 여백제거
+        data_temp["scores"][col.get_text(strip=True)] = int(row.get_text(strip=True)) # 여백제거
         
     # 플랫폼 데이터
     data_temp["platform info"] = cpus.find(name="div", attrs={"class" : "platform-info"}).get_text(strip=True) # 여백 제거
@@ -212,8 +213,19 @@ def _table_handler(parent:str, index:int):
                 break  # 유효한 col, row를 찾으면 루프 종료
 
         if (col is not None) and (row is not None):
-            data_temp[col.get_text(strip=True)] = row.get_text(strip=True) # 여백제거
-        
+            # 텍스트가 업로드 시간이면
+            if col.get_text(strip=True).upper() == "Upload Date".upper():
+                data_temp["Dates"][col.get_text(strip=True)] = row.get_text(strip=True) # 여백제거
+                data_temp["Dates"]["Parsed Date"] = format_date(text=row.get_text(strip=True), strpt="%B %d %Y %I:%M %p", strft="%Y-%m-%d %p %I:%M") # 여백제거
+
+            # 로그 조회수 값을 정수형으로
+            elif col.get_text(strip=True).upper() == "Views".upper():
+                data_temp[col.get_text(strip=True)] = int(row.get_text(strip=True)) # 여백제거
+                
+            else:
+                data_temp[col.get_text(strip=True)] = row.get_text(strip=True) # 여백제거
+                
+            
     return data_temp
 
 
@@ -223,23 +235,47 @@ def _benchmark_scores_table_handler(parent:str, index:int):
 
     # 전체 테이블
     tables = parent.find_all(name="table", attrs={"class": "table benchmark-table"})
-    # print(tables[index])
-    print("테스트 코드 개발 필요")
+    for tr in tables[index].find_all("tr"):
+        col = tr.find(name="td", attrs={"class": "name"})
+        row = tr.find(name="td", attrs={"class": "score"})
+
+        if (col is not None) and (row is not None): 
+            task_name = col.get_text(strip=True)
+            score, score_description = list(filter(lambda x: x.strip(),row.get_text(strip=False).split("\n")))
+            data_temp[task_name] = {"score": int(score), "description": score_description}
+        else:
+            col = tr.find(name="th", attrs={"class": "name"})
+            row = tr.find(name="th", attrs={"class": "score"})
+            data_temp[col.get_text(strip=True)] = {"score": int(row.get_text(strip=True))}
+
+    return data_temp
+
 
 # cpu 점수의 세부적인 데이터 Parse 처리자
 def details_cpu_parse_handler(soup:str):
+    data_temp = defaultdict(dict)
+
     main_column = soup.find(name="div", attrs={"class" : "primary col-lg-9 order-lg-first"})
     # 기본 정보
     basic_handler = _basic_handler(parent=main_column)
-    print(basic_handler)
+    data_temp["Basic Information"] = basic_handler
     
-    # 테이블 정보
+    # 0 ~ 3 테이블 정보
+    # 0 = Result Information
+    # 1 = System Information
+    # 2 = CPU Information
+    # 3 = Memory Information
+    col = ["Result Information", "System Information", "CPU Information", "Memory Information"]
     for index in range(4):
         table_handler = _table_handler(parent=main_column, index=index)
-        print(table_handler)
+        data_temp[col[index]] = table_handler
 
-    # 0 ~ 1 index 로 재초기화
+    # 0 ~ 1 index
+    # 0 = Single-Core Performance
+    # 1 = Multi-Core Performance
+    col = ["Single-Core Performance", "Multi-Core Performance"]
     for index in range(2):
-        _benchmark_scores_table_handler(parent=main_column, index=index)
+        benchmark_score_table = _benchmark_scores_table_handler(parent=main_column, index=index)
+        data_temp[col[index]] = benchmark_score_table
     
-    
+    return data_temp

@@ -26,6 +26,8 @@ class Parser:
         self._data['details'] = {
             'cpu': defaultdict(dict),
             'gpu': defaultdict(dict),
+            'basic_cpu': defaultdict(dict),
+            'basic_gpu': defaultdict(dict)
         }
         self._data['latest'] = {
             'cpu': defaultdict(dict),
@@ -176,7 +178,7 @@ class Parser:
                                             cols[3]: int(rows[4]), 
                                             cols[4]: int(rows[5])}
             else:
-                data_temp[url][cols[0]] = {"default date": rows[0], "parsed date": parse_full_date(text=rows[0])}
+                data_temp[url][cols[0]] = {"default date": rows[0], "parsed date": format_date(text=rows[0], strpt="%a, %d %b %Y %H:%M:%S %z", strft="%Y-%m-%d %p %H:%M:%S")}
                 data_temp[url][cols[1]] = {"model name": rows[1], "model ap": rows[2]}
                 data_temp[url][cols[2]] = rows[3]
                 data_temp[url]["scores"] = {cols[3]: int(rows[4]),
@@ -236,8 +238,14 @@ class Parser:
                 url=url
                 )
         else:
-            soup=BeautifulSoup(markup=html, features="lxml")
-            details_cpu_parse_handler(soup=soup)
+            # 데이터 추가
+            self._add_data(
+                data_name="GB6 CPU BASIC DETAILS Results",
+                all_data=self._data["all"],
+                data=self._data["details"]["basic_cpu"],
+                data_temp=details_cpu_parse_handler(soup=BeautifulSoup(markup=html, features="lxml")),
+                url=url
+                )
 
     # GPU 상세한
     def gpu_details_parse(self, url:str=None, html:set=None, result_data:dict=None, select_parse:bool=None):

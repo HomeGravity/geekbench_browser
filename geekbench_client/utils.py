@@ -19,15 +19,18 @@ def extract_date(text:str) -> str:
 
 
 # 전체 날짜 파싱 및 형식 변환
-def parse_full_date(text:str) -> str:
+def format_date(text: str, strpt:str, strft:str) -> str:
     from datetime import datetime
     
-    try:
-        dt = datetime.strptime(text, '%a, %d %b %Y %H:%M:%S %z')
-        return dt.strftime('%Y-%m-%d-%H:%M:%S')
-    except ValueError:
-        return None  # 날짜 형식이 아닐 경우 None 반환
+    try:    
+        # 문자열을 datetime 객체로 변환
+        dt = datetime.strptime(text, strpt)
+        # 원하는 형식으로 변환
+        return dt.strftime(strft)
 
+    except ValueError:
+        return None
+    
 
 # 마지막 페이지 확인
 def check_for_last_page(text:str) -> bool:

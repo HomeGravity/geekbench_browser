@@ -468,7 +468,15 @@ class GeekbenchBrowserAPI():
     # 단일 데이터 반환 - GPU DETAILS
     def get_details_gpu_data(self):
         return self._parser.emit_data(access_keys=["details", "gpu"])
+
+    # 단일 데이터 반환 - CPU BASIC DETAILS
+    def get_basic_details_cpu_data(self):
+        return self._parser.emit_data(access_keys=["details", "basic_cpu"])
     
+    # 단일 데이터 반환 - GPU BASIC DETAILS
+    def get_basic_details_gpu_data(self):
+        return self._parser.emit_data(access_keys=["details", "basic_gpu"])
+
     # 단일 데이터 반환 - LATEST CPU
     def get_latest_cpu_data(self):
         return self._parser.emit_data(access_keys=["latest", "cpu"])
