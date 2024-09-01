@@ -260,22 +260,35 @@ def details_cpu_parse_handler(soup:str):
     basic_handler = _basic_handler(parent=main_column)
     data_temp["Basic Information"] = basic_handler
     
+    table_cols = main_column.find_all(name="th", attrs={"class": "rounded-top"})
+    headings = main_column.find_all(name="div", attrs={"class": "heading"})
+    
+    # 테이블 컬럼 텍스트 추출
+    table_col = [x.get_text(strip=True) for x in table_cols]
+    
+    # 헤딩 텍스트 추출 및 "System Information" 제거
+    heading = [x.find(name="h3").get_text(strip=True) for x in headings if x.find(name="h3").get_text(strip=True) != "System Information"]
+    
+    # "Result Information"을 찾아서 첫 번째에 삽입
+    res_info_index = heading[heading.index("Result Information")]
+    if res_info_index in heading:
+        table_col.insert(0, res_info_index)
+        heading.remove(res_info_index)
+        
     # 0 ~ 3 테이블 정보
     # 0 = Result Information
     # 1 = System Information
     # 2 = CPU Information
     # 3 = Memory Information
-    col = ["Result Information", "System Information", "CPU Information", "Memory Information"]
     for index in range(4):
         table_handler = _table_handler(parent=main_column, index=index)
-        data_temp[col[index]] = table_handler
+        data_temp[table_col[index]] = table_handler
 
     # 0 ~ 1 index
     # 0 = Single-Core Performance
     # 1 = Multi-Core Performance
-    col = ["Single-Core Performance", "Multi-Core Performance"]
     for index in range(2):
         benchmark_score_table = _benchmark_scores_table_handler(parent=main_column, index=index)
-        data_temp[col[index]] = benchmark_score_table
+        data_temp[heading[index]] = benchmark_score_table
     
     return data_temp
