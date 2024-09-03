@@ -6,7 +6,7 @@ import json
 from .utils import *
 from .parser_handlers.login_parse_handler import login_parse_handler
 from .parser_handlers.cpu_parse_handler import cpu_parse_handler, latest_or_top_cpu_parse_handler, details_cpu_parse_handler
-from .parser_handlers.gpu_parse_handler import gpu_parse_handler, latest_gpu_parse_handler
+from .parser_handlers.gpu_parse_handler import gpu_parse_handler, latest_gpu_parse_handler, details_gpu_parse_handler
 from .parser_handlers.ai_parse_handler import ai_parse_handler, latest_ai_parse_handler
 
 
@@ -27,7 +27,9 @@ class Parser:
             'cpu': defaultdict(dict),
             'gpu': defaultdict(dict),
             'basic_cpu': defaultdict(dict),
-            'basic_gpu': defaultdict(dict)
+            'basic_gpu': defaultdict(dict),
+            'basic_ai': defaultdict(dict),
+            
         }
         self._data['latest'] = {
             'cpu': defaultdict(dict),
@@ -259,8 +261,31 @@ class Parser:
                 url=url
                 )
         else:
-            print("gpu parse 추가 필요")
-            
+          # 데이터 추가
+            self._add_data(
+                data_name="GB6 GPU BASIC DETAILS Results",
+                all_data=self._data["all"],
+                data=self._data["details"]["basic_gpu"],
+                data_temp=details_gpu_parse_handler(soup=BeautifulSoup(markup=html, features="lxml")),
+                url=url
+                )
+    
+
+    # AI 상세한 - 추가 예정
+    def ai_details_parse(self, url:str=None, html:set=None, result_data:dict=None, select_parse:bool=None):
+        if False:
+            # 데이터 추가
+            self._add_data(
+                data_name="GB6 AI BASIC DETAILS Results",
+                all_data=self._data["all"],
+                data=self._data["details"]["basic_ai"],
+                data_temp=ModuleNotFoundError(soup=BeautifulSoup(markup=html, features="lxml")),
+                url=url
+                )
+        else:
+            print("추가 예정")
+
+
     # 최신 CPU 데이터 반영 구문분석
     def latest_cpu_parse(self, html:str, page:str) -> None:       
         # 데이터 추가
@@ -318,7 +343,6 @@ class Parser:
 
     # 데이터 추가 함수
     def _add_data(self, page:int=None, data_name:str=None, all_data:dict=None, data:dict=None, data_temp:dict=None, url:str=None):
-
         # page 또는 url
         page_or_url = page if page is not None else url
 

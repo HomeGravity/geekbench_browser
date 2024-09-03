@@ -233,19 +233,31 @@ def _table_handler(parent:str, index:int):
 def _benchmark_scores_table_handler(parent:str, index:int):
     data_temp = defaultdict(dict)
 
+    # 두 개의 클래스 목록을 정의
+    class_pairs = [
+        {"name": "td"},
+        {"name": "th"}
+    ]
+
     # 전체 테이블
     tables = parent.find_all(name="table", attrs={"class": "table benchmark-table"})
     for tr in tables[index].find_all("tr"):
-        col = tr.find(name="td", attrs={"class": "name"})
-        row = tr.find(name="td", attrs={"class": "score"})
+        col, row, col_index = None, None, 0 # 임시 초기화
 
-        if (col is not None) and (row is not None): 
+        for classes in class_pairs:
+            col = tr.find(name=classes["name"], attrs={"class": "name"})
+            row = tr.find(name=classes["name"], attrs={"class": "score"})
+            col_index += 1
+
+            if (col is not None) and (row is not None):
+                break  # 유효한 col, row를 찾으면 루프 종료
+        
+        # index 값이 1 이면
+        if col_index == 1: 
             task_name = col.get_text(strip=True)
             score, score_description = list(filter(lambda x: x.strip(),row.get_text(strip=False).split("\n")))
             data_temp[task_name] = {"score": int(score), "description": score_description}
         else:
-            col = tr.find(name="th", attrs={"class": "name"})
-            row = tr.find(name="th", attrs={"class": "score"})
             data_temp[col.get_text(strip=True)] = {"score": int(row.get_text(strip=True))}
 
     return data_temp

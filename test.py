@@ -31,6 +31,8 @@ async def run():
         
     #     # 세션 종료
     #     await gb6.session_close()
+
+    
     # await asyncio.gather(
     #     gb6.cpu_details_fetch(
     #         urls=[],
@@ -55,7 +57,7 @@ async def run():
     # print(android)
     # print(vulkan)
     
-    await gb6.cpu_details_fetch(urls=["https://browser.geekbench.com/v6/cpu/7546143"], delay=2, select_parse=False)
+    await gb6.gpu_details_fetch(urls=["https://browser.geekbench.com/v6/compute/2698404"], delay=2, select_parse=False)
     # await gb6.latest_ai_fetch(start_page=1, end_page=2, delay=2)
     
     # print(gb6.get_details_cpu_data())
@@ -68,7 +70,9 @@ async def run():
     # print(gb6.get_latest_gpu_data())
     # print(gb6.get_search_cpu_data())
     # print(gb6.get_search_gpu_data())
-    print(gb6.get_basic_details_cpu_data())
+    # print(gb6.get_details_cpu_data(select_parse=False))
+    print(gb6.get_details_gpu_data(select_parse=False))
+
     
     
     # 세션 종료

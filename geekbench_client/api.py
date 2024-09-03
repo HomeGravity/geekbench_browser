@@ -107,8 +107,6 @@ class GeekbenchBrowserAPI():
             ) as response:
             response.raise_for_status()
             
-            pass
-            
             
     # 비동기 요청 함수
     async def _fetch(
@@ -287,7 +285,20 @@ class GeekbenchBrowserAPI():
             type="compute",
             select_parse=select_parse
         )
-    
+
+    # AI 상세한 정보
+    async def ai_details_fetch(self, urls:Union[list, tuple], delay:float=3, select_parse:bool=False):
+        if False:
+            await self._details_fetch(
+                urls=urls,
+                delay=delay,
+                parser=self._parser,
+                type="ai",
+                select_parse=select_parse
+            )
+        else:
+            print("추가 예정")
+
     # 안드로이드 벤치마크 차트 json
     async def android_chart_json_fetch_and_get_data(self) -> dict:
         return await self._json_fetch(
@@ -462,20 +473,22 @@ class GeekbenchBrowserAPI():
         return self._parser.emit_data(access_keys=["search", "ai"])
     
     # 단일 데이터 반환 - CPU DETAILS
-    def get_details_cpu_data(self):
-        return self._parser.emit_data(access_keys=["details", "cpu"])
+    def get_details_cpu_data(self, select_parse=False):
+        if select_parse:
+            return self._parser.emit_data(access_keys=["details", "cpu"])
+        else:
+            return self._parser.emit_data(access_keys=["details", "basic_cpu"])
     
     # 단일 데이터 반환 - GPU DETAILS
-    def get_details_gpu_data(self):
-        return self._parser.emit_data(access_keys=["details", "gpu"])
+    def get_details_gpu_data(self, select_parse=False):
+        if select_parse:
+            return self._parser.emit_data(access_keys=["details", "gpu"])
+        else:
+            return self._parser.emit_data(access_keys=["details", "basic_gpu"])
 
-    # 단일 데이터 반환 - CPU BASIC DETAILS
-    def get_basic_details_cpu_data(self):
-        return self._parser.emit_data(access_keys=["details", "basic_cpu"])
-    
-    # 단일 데이터 반환 - GPU BASIC DETAILS
-    def get_basic_details_gpu_data(self):
-        return self._parser.emit_data(access_keys=["details", "basic_gpu"])
+    # 단일 데이터 반환 - AI DETAILS
+    def get_details_ai_data(self):
+        return self._parser.emit_data(access_keys=["details", "basic_ai"])
 
     # 단일 데이터 반환 - LATEST CPU
     def get_latest_cpu_data(self):
