@@ -1,5 +1,6 @@
 # geekbench-browser
 geekbench-browser의 비공식(non-officia) API입니다.
+
 geekbench 버전은 geekbench6 입니다.
 
 ## 설치 방법
