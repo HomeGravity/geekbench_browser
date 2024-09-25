@@ -328,8 +328,9 @@ class Parser:
                 
     
     # 데이터를 체크합니다.
-    def _emit_data_check(self, data:dict) -> dict:
-        return data if len(data.keys()) != 0 else None
+    def _emit_data_check(self, data: dict) -> dict:
+        # 오름차순 정렬
+        return {key: data[key] for key in sorted(data.keys(), reverse=False)} if len(data.keys()) != 0 else None
         # return json.dumps(data, ensure_ascii=False, indent=4) if len(data.keys()) != 0 else None
 
 

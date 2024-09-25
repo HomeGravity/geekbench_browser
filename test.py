@@ -40,18 +40,17 @@ async def run():
     #     await gb6.session_close()
 
     
+    time_delay = 10
     await asyncio.gather(
-    gb6.latest_cpu_fetch(start_page=1, end_page=17, delay=4),
-    gb6.latest_cpu_fetch(start_page=18, end_page=33, delay=4),
-    gb6.latest_cpu_fetch(start_page=34, end_page=50, delay=4),
-    gb6.latest_cpu_fetch(start_page=51, end_page=67, delay=4),
-    gb6.latest_cpu_fetch(start_page=68, end_page=83, delay=4),
-    gb6.latest_cpu_fetch(start_page=84, end_page=100, delay=4),
+    gb6.latest_cpu_fetch(start_page=1, end_page=17, delay=time_delay),
+    gb6.latest_cpu_fetch(start_page=18, end_page=33, delay=time_delay),
+    gb6.latest_cpu_fetch(start_page=34, end_page=50, delay=time_delay),
+    gb6.latest_cpu_fetch(start_page=51, end_page=67, delay=time_delay),
+    gb6.latest_cpu_fetch(start_page=68, end_page=83, delay=time_delay),
+    gb6.latest_cpu_fetch(start_page=84, end_page=100, delay=time_delay),
     )
     
-    
-    # print(gb6.get_latest_cpu_data())
-    save_json_to_file(data=gb6.get_latest_cpu_data(), filename="test3.json")
+    save_json_to_file(data=gb6.get_latest_cpu_data(), filename="test.json")
     
     # 병렬로 여러 요청을 수행
     # android, vulkan = await asyncio.gather(
