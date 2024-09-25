@@ -175,13 +175,14 @@ class GeekbenchBrowserAPI():
 
 
     # 상세한 정보 가져오기
-    async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None, select_parse:bool=None):
+    async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None, login_status:bool=None):
         for handling, url in enumerate(urls, start=1):
             if type in url:
-                
-                if select_parse:
+                # 로그인 상태가 True이면 *.gb6으로 접속하여 데이터를 수집함.
+                # 먼저 login 메소드를 호출하여 로그인을 해야 사용가능.
+                if login_status:
                     result = await self._json_fetch(url=url, extension=".gb6")
-                    parser(url=url, result_data=result, select_parse=select_parse)
+                    parser(url=url, result_data=result, login_status=login_status)
                     
                 else:
                     async with self._session.get(
@@ -190,7 +191,7 @@ class GeekbenchBrowserAPI():
                         ) as response:
                         
                         response.raise_for_status()
-                        parser(url=url, html=await response.text(encoding="utf-8"), select_parse=select_parse)
+                        parser(url=url, html=await response.text(encoding="utf-8"), login_status=login_status)
                 
                 # debug
                 print(f"type: details {type.replace("compute", "gpu")} - handling: {handling}")
@@ -267,34 +268,34 @@ class GeekbenchBrowserAPI():
     
     
     # CPU 상세한 정보
-    async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3, select_parse:bool=False):
+    async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3, login_status:bool=False):
         await self._details_fetch(
             urls=urls,
             delay=delay,
             parser=self._parser.cpu_details_parse,
             type="cpu",
-            select_parse=select_parse
+            login_status=login_status
         )
 
     # GPU 상세한 정보
-    async def gpu_details_fetch(self, urls:Union[list, tuple], delay:float=3, select_parse:bool=False):
+    async def gpu_details_fetch(self, urls:Union[list, tuple], delay:float=3, login_status:bool=False):
         await self._details_fetch(
             urls=urls,
             delay=delay,
             parser=self._parser.gpu_details_parse,
             type="compute",
-            select_parse=select_parse
+            login_status=login_status
         )
 
     # AI 상세한 정보
-    async def ai_details_fetch(self, urls:Union[list, tuple], delay:float=3, select_parse:bool=False):
+    async def ai_details_fetch(self, urls:Union[list, tuple], delay:float=3, login_status:bool=False):
         if False:
             await self._details_fetch(
                 urls=urls,
                 delay=delay,
                 parser=self._parser,
                 type="ai",
-                select_parse=select_parse
+                login_status=login_status
             )
         else:
             print("추가 예정")
@@ -355,6 +356,9 @@ class GeekbenchBrowserAPI():
             extension=".json"
         )
     
+    
+    # Latest 공통 버그
+    # 1. 100 Page 초과되면 오류발생을 확인.
     
     # 최신 데이터 반영 가져오기
     async def latest_cpu_fetch(
@@ -455,11 +459,7 @@ class GeekbenchBrowserAPI():
             parser=self._parser.top_multi_cpu_parse,
             type="cpu top multi"
             )
-    
-    # 모든 데이터 반환 - CPU, GPU, AI...
-    def get_all_data(self):
-        return self._parser.emit_data(access_keys=["all"])
-    
+
     # 단일 데이터 반환 - CPU
     def get_search_cpu_data(self):
         return self._parser.emit_data(access_keys=["search", "cpu"])
@@ -473,15 +473,15 @@ class GeekbenchBrowserAPI():
         return self._parser.emit_data(access_keys=["search", "ai"])
     
     # 단일 데이터 반환 - CPU DETAILS
-    def get_details_cpu_data(self, select_parse=False):
-        if select_parse:
+    def get_details_cpu_data(self, login_status=False):
+        if login_status:
             return self._parser.emit_data(access_keys=["details", "cpu"])
         else:
             return self._parser.emit_data(access_keys=["details", "basic_cpu"])
     
     # 단일 데이터 반환 - GPU DETAILS
-    def get_details_gpu_data(self, select_parse=False):
-        if select_parse:
+    def get_details_gpu_data(self, login_status=False):
+        if login_status:
             return self._parser.emit_data(access_keys=["details", "gpu"])
         else:
             return self._parser.emit_data(access_keys=["details", "basic_gpu"])

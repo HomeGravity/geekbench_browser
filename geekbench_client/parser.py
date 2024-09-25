@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from typing import Callable, Any
-import json
 
 from .utils import *
 from .parser_handlers.login_parse_handler import login_parse_handler
@@ -17,7 +16,6 @@ class Parser:
 
     # 데이터 구조화 초기화
     def _initialize_data_structure(self):
-        self._data['all'] = defaultdict(dict)
         self._data['search'] = {
             'cpu': defaultdict(dict),
             'gpu': defaultdict(dict),
@@ -196,8 +194,6 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 CPU Search Results",
-            all_data=self._data["all"],
             data=self._data["search"]["cpu"],
             data_temp=self._cpu_parse_processor(html=html, parser=cpu_parse_handler)
             )
@@ -208,8 +204,6 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 GPU Search Results",
-            all_data=self._data["all"],
             data=self._data["search"]["gpu"],
             data_temp=self._gpu_parse_processor(html=html, parser=gpu_parse_handler)
             )
@@ -220,8 +214,6 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 AI Search Results",
-            all_data=self._data["all"],
             data=self._data["search"]["ai"],
             data_temp=self._ai_parse_processor(html=html, selection=True)
             )
@@ -229,12 +221,11 @@ class Parser:
 
     # 상세한 정보 구문분석
     # CPU 상세한
-    def cpu_details_parse(self, url:str=None, html:set=None, result_data:dict=None, select_parse:bool=None):
-        if select_parse:
+    def cpu_details_parse(self, url:str=None, html:set=None, result_data:dict=None, login_status:bool=None):
+        # 로그인을 했을때
+        if login_status:
             # 데이터 추가
             self._add_data(
-                data_name="GB6 CPU DETAILS Results",
-                all_data=self._data["all"],
                 data=self._data["details"]["cpu"],
                 data_temp=result_data,
                 url=url
@@ -242,29 +233,24 @@ class Parser:
         else:
             # 데이터 추가
             self._add_data(
-                data_name="GB6 CPU BASIC DETAILS Results",
-                all_data=self._data["all"],
                 data=self._data["details"]["basic_cpu"],
                 data_temp=details_cpu_parse_handler(soup=BeautifulSoup(markup=html, features="lxml")),
                 url=url
                 )
 
     # GPU 상세한
-    def gpu_details_parse(self, url:str=None, html:set=None, result_data:dict=None, select_parse:bool=None):
-        if select_parse:
+    def gpu_details_parse(self, url:str=None, html:set=None, result_data:dict=None, login_status:bool=None):
+        # 로그인을 했을때
+        if login_status:
             # 데이터 추가
             self._add_data(
-                data_name="GB6 GPU DETAILS Results",
-                all_data=self._data["all"],
                 data=self._data["details"]["gpu"],
                 data_temp=result_data,
                 url=url
                 )
         else:
-          # 데이터 추가
+            # 데이터 추가
             self._add_data(
-                data_name="GB6 GPU BASIC DETAILS Results",
-                all_data=self._data["all"],
                 data=self._data["details"]["basic_gpu"],
                 data_temp=details_gpu_parse_handler(soup=BeautifulSoup(markup=html, features="lxml")),
                 url=url
@@ -272,12 +258,10 @@ class Parser:
     
 
     # AI 상세한 - 추가 예정
-    def ai_details_parse(self, url:str=None, html:set=None, result_data:dict=None, select_parse:bool=None):
+    def ai_details_parse(self, url:str=None, html:set=None, result_data:dict=None, login_status:bool=None):
         if False:
             # 데이터 추가
             self._add_data(
-                data_name="GB6 AI BASIC DETAILS Results",
-                all_data=self._data["all"],
                 data=self._data["details"]["basic_ai"],
                 data_temp=ModuleNotFoundError(soup=BeautifulSoup(markup=html, features="lxml")),
                 url=url
@@ -291,8 +275,6 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 LATEST CPU Results",
-            all_data=self._data["all"],
             data=self._data["latest"]["cpu"],
             data_temp=self._cpu_parse_processor(html=html, parser=latest_or_top_cpu_parse_handler)
             )
@@ -302,8 +284,6 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 LATEST GPU Results",
-            all_data=self._data["all"],
             data=self._data["latest"]["gpu"],
             data_temp=self._gpu_parse_processor(html=html, parser=latest_gpu_parse_handler)
             )
@@ -313,8 +293,6 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 LATEST AI Results",
-            all_data=self._data["all"],
             data=self._data["latest"]["ai"],
             data_temp=self._ai_parse_processor(html=html, selection=False)
             )
@@ -324,8 +302,6 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 TOP Single Results",
-            all_data=self._data["all"],
             data=self._data["top"]["single_cpu"],
             data_temp=self._cpu_parse_processor(html=html)
             )
@@ -335,23 +311,17 @@ class Parser:
         # 데이터 추가
         self._add_data(
             page=page,
-            data_name="GB6 TOP Multi Results",
-            all_data=self._data["all"],
             data=self._data["top"]["multi_cpu"],
             data_temp=self._cpu_parse_processor(html=html)
             )
 
     # 데이터 추가 함수
-    def _add_data(self, page:int=None, data_name:str=None, all_data:dict=None, data:dict=None, data_temp:dict=None, url:str=None):
+    def _add_data(self, page:int=None, data:dict=None, data_temp:dict=None, url:str=None):
         # page 또는 url
         page_or_url = page if page is not None else url
 
         # 딕셔너리의 키 개수가 0개이면 빈 딕셔너리로 판단하여 추가하지 않음.
         if len(data_temp.keys()) != 0:
-            # 모든 데이터 사전에 추가
-            if page_or_url not in all_data[data_name]:
-                all_data[data_name][page_or_url] = data_temp
-
             # 단일 데이터 사전에 추가
             if page_or_url not in data:
                 data[page_or_url] = data_temp
@@ -359,8 +329,8 @@ class Parser:
     
     # 데이터를 체크합니다.
     def _emit_data_check(self, data:dict) -> dict:
-        # return data if len(data.keys()) != 0 else None
-        return json.dumps(data, ensure_ascii=False, indent=4) if len(data.keys()) != 0 else None
+        return data if len(data.keys()) != 0 else None
+        # return json.dumps(data, ensure_ascii=False, indent=4) if len(data.keys()) != 0 else None
 
 
     # 데이터를 반환합니다.
