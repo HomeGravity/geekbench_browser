@@ -124,6 +124,9 @@ class GeekbenchBrowserAPI():
         ) -> dict:
         
         
+        # 총 소요 시간 계산
+        total_time_seconds =  end_page * delay
+        
         # start_page 가 end_page 까지 반복.
         for page in range(start_page, end_page + 1):
             # 페이로드 작성
@@ -151,14 +154,18 @@ class GeekbenchBrowserAPI():
                     )
                 
                 # debug
-                print(f"search: {payload["q"]} - type: {type} - page: {payload["page"]}") if not payload_change else print(f"type: {type} - page: {payload["page"]}")
+                # 남은 시간 계산
+                remaining_time = total_time_seconds - page * delay
+                print(f"search: {payload["q"]} - type: {type} - | start page: {start_page} - current page: {payload["page"]} - end page: {end_page} | remaining time: {remaining_time}s") if not payload_change else print(f"type: {type} - | start page: {start_page} - current page: {payload["page"]} - end page: {end_page} | remaining time: {remaining_time}s")
 
                 
                 if check_for_last_page(text):
                     break
                 
-                # 비동기적으로 대기
-                await asyncio.sleep(delay=delay)
+                # 마지막 링크는 비동기 대기 적용안함.
+                if page < end_page:
+                    # 비동기적으로 대기
+                    await asyncio.sleep(delay=delay)
         
         return result
 
@@ -176,6 +183,13 @@ class GeekbenchBrowserAPI():
 
     # 상세한 정보 가져오기
     async def _details_fetch(self, urls:Union[list, tuple]=None, delay:float=None, parser:Callable[[str], Any]=None, type:str=None, login_status:bool=None):
+        
+        # 링크 총합 계산
+        total_handling = len(urls)
+        
+        # 총 소요 시간 계산
+        total_time_seconds = total_handling * delay
+        
         for handling, url in enumerate(urls, start=1):
             if type in url:
                 # 로그인 상태가 True이면 *.gb6으로 접속하여 데이터를 수집함.
@@ -194,8 +208,13 @@ class GeekbenchBrowserAPI():
                         parser(url=url, html=await response.text(encoding="utf-8"), login_status=login_status)
                 
                 # debug
-                print(f"type: details {type.replace("compute", "gpu")} - handling: {handling}")
-                await asyncio.sleep(delay=delay)
+                # 남은 시간 계산
+                remaining_time = total_time_seconds - handling * delay            
+                print(f"type: details {type.replace("compute", "gpu")} | handling: {handling} - total handling: {total_handling} | remaining time: {remaining_time}s")
+                
+                # 마지막 링크는 비동기 대기 적용안함.
+                if handling < total_handling:
+                    await asyncio.sleep(delay=delay)
 
     # 가져오기
     async def cpu_search_fetch(
@@ -300,63 +319,40 @@ class GeekbenchBrowserAPI():
         else:
             print("추가 예정")
 
-    # 안드로이드 벤치마크 차트 json
+
+    # 주어진 차트 타입에 따라 JSON 데이터를 가져옴
+    async def _fetch_chart_json(self, chart_type: str) -> dict:
+        url_key = f"gb6_{chart_type}_chart_url"
+        return await self._json_fetch(
+            url=self._gb6_urls[url_key],
+            extension=".json"
+        )
+
+    # 각 차트 유형에 대한 비동기 함수
     async def android_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_android_chart_url"],
-            extension=".json"
-        )
-    
-    # ios 벤치마크 차트 json
+        return await self._fetch_chart_json("android")
+
     async def ios_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_ios_chart_url"],
-            extension=".json"
-        )
+        return await self._fetch_chart_json("ios")
 
-    # mac 벤치마크 차트 json
     async def mac_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_mac_chart_url"],
-            extension=".json"
-        )
+        return await self._fetch_chart_json("mac")
 
-    # processor 벤치마크 차트 json
     async def processor_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_processor_chart_url"],
-            extension=".json"
-        )
-    
-    # ml 벤치마크 차트 json
+        return await self._fetch_chart_json("processor")
+
     async def ml_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_ml_chart_url"],
-            extension=".json"
-        )
-    
-    # metal 벤치마크 차트 json
+        return await self._fetch_chart_json("ml")
+
     async def metal_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_metal_chart_url"],
-            extension=".json"
-        )
-    
-    # opencl 벤치마크 차트 json
+        return await self._fetch_chart_json("metal")
+
     async def opencl_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_opencl_chart_url"],
-            extension=".json"
-        )
-    
-    # vulkan 벤치마크 차트 json
+        return await self._fetch_chart_json("opencl")
+
     async def vulkan_chart_json_fetch_and_get_data(self) -> dict:
-        return await self._json_fetch(
-            url=self._gb6_urls["gb6_vulkan_chart_url"],
-            extension=".json"
-        )
-    
-    
+        return await self._fetch_chart_json("vulkan")
+
     # Latest 공통 버그
     # 1. 100 Page 초과되면 오류발생을 확인.
     

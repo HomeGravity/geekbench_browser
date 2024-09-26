@@ -3,6 +3,7 @@ from geekbench_client.utils import *
 import asyncio
 
 import json
+import time
 
 # JSON 파일로 저장하는 함수
 def save_json_to_file(data, filename):
@@ -40,7 +41,8 @@ async def run():
     #     await gb6.session_close()
 
     
-    time_delay = 10
+    total_page = 1000 
+    time_delay = 6
     await asyncio.gather(
     gb6.latest_cpu_fetch(start_page=1, end_page=17, delay=time_delay),
     gb6.latest_cpu_fetch(start_page=18, end_page=33, delay=time_delay),
@@ -50,7 +52,46 @@ async def run():
     gb6.latest_cpu_fetch(start_page=84, end_page=100, delay=time_delay),
     )
     
+    
+    # total_page = 1444 
+    # time_delay = 6
+    # num_tasks = 6  # 작업 수
+
+    # # 각 작업에 균등하게 페이지 할당
+    # pages_per_task = total_page // num_tasks
+    # remaining_pages = total_page % num_tasks
+
+    # # 작업을 생성
+    # tasks = []
+    # for i in range(num_tasks):
+    #     start_page = i * pages_per_task + 1
+    #     end_page = start_page + pages_per_task - 1
+    #     if i == num_tasks - 1:  # 마지막 작업
+    #         end_page += remaining_pages  # 남은 페이지 추가
+        
+    #     print(start_page, end_page)
+    #     tasks.append(gb6.cpu_search_fetch(start_page=start_page, end_page=end_page, delay=time_delay))
+
+
+    # # 비동기 작업 실행
+    # await asyncio.gather(*tasks)
+
+    
     save_json_to_file(data=gb6.get_latest_cpu_data(), filename="test.json")
+    
+    
+    # time_delay = 6
+    # await asyncio.gather(
+    # gb6.latest_gpu_fetch(start_page=1, end_page=17, delay=time_delay),
+    # gb6.latest_gpu_fetch(start_page=18, end_page=33, delay=time_delay),
+    # gb6.latest_gpu_fetch(start_page=34, end_page=50, delay=time_delay),
+    # gb6.latest_gpu_fetch(start_page=51, end_page=67, delay=time_delay),
+    # gb6.latest_gpu_fetch(start_page=68, end_page=83, delay=time_delay),
+    # gb6.latest_gpu_fetch(start_page=84, end_page=100, delay=time_delay),
+    # )
+    
+    # save_json_to_file(data=gb6.get_latest_gpu_data(), filename="gpu_test.json")
+    
     
     # 병렬로 여러 요청을 수행
     # android, vulkan = await asyncio.gather(
