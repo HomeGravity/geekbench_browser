@@ -11,7 +11,7 @@ def save_json_to_file(data, filename):
         json.dump(data, json_file, ensure_ascii=False, indent=4)  # JSON으로 변환하여 파일에 저장
 
 async def run():
-    gb6 = GeekbenchBrowserAPI(search_target="sm-s928n")
+    gb6 = GeekbenchBrowserAPI(search_target="IPhone17")
     # await gb6.login(id="id", passwrod="passwrod")
     
     # 하나의 객체는 하나의 검색어만 수집할 수 있게 설계되었습니다.
@@ -42,42 +42,41 @@ async def run():
 
     
     total_page = 1000 
-    time_delay = 6
-    await asyncio.gather(
-    gb6.latest_cpu_fetch(start_page=1, end_page=17, delay=time_delay),
-    gb6.latest_cpu_fetch(start_page=18, end_page=33, delay=time_delay),
-    gb6.latest_cpu_fetch(start_page=34, end_page=50, delay=time_delay),
-    gb6.latest_cpu_fetch(start_page=51, end_page=67, delay=time_delay),
-    gb6.latest_cpu_fetch(start_page=68, end_page=83, delay=time_delay),
-    gb6.latest_cpu_fetch(start_page=84, end_page=100, delay=time_delay),
-    )
-    
-    
-    # total_page = 1444 
     # time_delay = 6
-    # num_tasks = 6  # 작업 수
+    # await asyncio.gather(
+    # gb6.latest_cpu_fetch(start_page=1, end_page=17, delay=time_delay),
+    # gb6.latest_cpu_fetch(start_page=18, end_page=33, delay=time_delay),
+    # gb6.latest_cpu_fetch(start_page=34, end_page=50, delay=time_delay),
+    # gb6.latest_cpu_fetch(start_page=51, end_page=67, delay=time_delay),
+    # gb6.latest_cpu_fetch(start_page=68, end_page=83, delay=time_delay),
+    # gb6.latest_cpu_fetch(start_page=84, end_page=100, delay=time_delay),
+    # )
+    
+    
+    total_page = 582 
+    time_delay = 8
+    num_tasks = 6  # 작업 수
 
-    # # 각 작업에 균등하게 페이지 할당
-    # pages_per_task = total_page // num_tasks
-    # remaining_pages = total_page % num_tasks
+    # 각 작업에 균등하게 페이지 할당
+    pages_per_task = total_page // num_tasks
+    remaining_pages = total_page % num_tasks
 
-    # # 작업을 생성
-    # tasks = []
-    # for i in range(num_tasks):
-    #     start_page = i * pages_per_task + 1
-    #     end_page = start_page + pages_per_task - 1
-    #     if i == num_tasks - 1:  # 마지막 작업
-    #         end_page += remaining_pages  # 남은 페이지 추가
+    # 작업을 생성
+    tasks = []
+    for i in range(num_tasks):
+        start_page = i * pages_per_task + 1
+        end_page = start_page + pages_per_task - 1
+        if i == num_tasks - 1:  # 마지막 작업
+            end_page += remaining_pages  # 남은 페이지 추가
         
-    #     print(start_page, end_page)
-    #     tasks.append(gb6.cpu_search_fetch(start_page=start_page, end_page=end_page, delay=time_delay))
+        tasks.append(gb6.cpu_search_fetch(start_page=start_page, end_page=end_page, delay=time_delay))
 
 
-    # # 비동기 작업 실행
-    # await asyncio.gather(*tasks)
+    # 비동기 작업 실행
+    await asyncio.gather(*tasks)
 
     
-    save_json_to_file(data=gb6.get_latest_cpu_data(), filename="test.json")
+    save_json_to_file(data=gb6.get_search_cpu_data(), filename="IPhone17.json")
     
     
     # time_delay = 6
