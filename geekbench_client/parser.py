@@ -190,9 +190,10 @@ class Parser:
             
 
     # cpu 부분 데이터 구문 분석
-    def cpu_search_parse(self, html:str, page:str) -> dict:               
+    def cpu_search_parse(self, search_target:str, html:str, page:str) -> dict:               
         # 데이터 추가
         self._add_data(
+            search_target=search_target,
             page=page,
             data=self._data["search"]["cpu"],
             data_temp=self._cpu_parse_processor(html=html, parser=cpu_parse_handler)
@@ -200,9 +201,10 @@ class Parser:
 
 
     # gpu 부분 데이터 구문 분석
-    def gpu_search_parse(self, html:str, page:str) -> dict:        
+    def gpu_search_parse(self, search_target:str, html:str, page:str) -> dict:        
         # 데이터 추가
         self._add_data(
+            search_target=search_target,
             page=page,
             data=self._data["search"]["gpu"],
             data_temp=self._gpu_parse_processor(html=html, parser=gpu_parse_handler)
@@ -210,9 +212,10 @@ class Parser:
 
 
     # ai 부분 데이터 구문 분석
-    def ai_search_parse(self, html:str, page:str) -> dict:
+    def ai_search_parse(self, search_target:str, html:str, page:str) -> dict:
         # 데이터 추가
         self._add_data(
+            search_target=search_target,
             page=page,
             data=self._data["search"]["ai"],
             data_temp=self._ai_parse_processor(html=html, selection=True)
@@ -316,7 +319,7 @@ class Parser:
             )
 
     # 데이터 추가 함수
-    def _add_data(self, page:int=None, data:dict=None, data_temp:dict=None, url:str=None):
+    def _add_data(self, search_target:str=None, page:int=None, data:dict=None, data_temp:dict=None, url:str=None):
         # page 또는 url
         page_or_url = page if page is not None else url
 
@@ -324,20 +327,25 @@ class Parser:
         if len(data_temp.keys()) != 0:
             # 단일 데이터 사전에 추가
             if page_or_url not in data:
-                data[page_or_url] = data_temp
+                if search_target is not None:
+                    data[search_target][page_or_url] = data_temp
+                else:
+                    data[page_or_url] = data_temp
                 
     
     # 데이터를 체크합니다.
-    def _emit_data_check(self, data: dict) -> dict:
+    def _emit_data_check(self, search_target:bool, data:dict) -> dict:
         # 오름차순 정렬
-        return {key: data[key] for key in sorted(data.keys(), reverse=False)} if len(data.keys()) != 0 else None
-        # return json.dumps(data, ensure_ascii=False, indent=4) if len(data.keys()) != 0 else None
-
+        if search_target is None:
+            return {key: data[key] for key in sorted(data.keys(), reverse=False)} if len(data.keys()) != 0 else None
+        else:
+            return {outer_key: {k: inner_dict[k] for k in sorted(inner_dict.keys(), reverse=False)
+                                } if len(inner_dict.keys()) != 0 else inner_dict for outer_key, inner_dict in data.items()} if len(data.keys()) != 0 else None
+        
 
     # 데이터를 반환합니다.
-    def emit_data(self, access_keys:list) -> dict:
+    def emit_data(self, search_target:bool=None, access_keys:list=None) -> dict:
         if isinstance(access_keys, list) and len(access_keys) >= 2:
-            return self._emit_data_check(data=self._data[access_keys[0]][access_keys[1]]) # 각 키로 접근
-            
+            return self._emit_data_check(search_target, data=self._data[access_keys[0]][access_keys[1]]) # 각 키로 접근
         else:
-            return self._emit_data_check(data=self._data[access_keys[0]])  # 단일 키로 접근
+            return self._emit_data_check(search_target, data=self._data[access_keys[0]])  # 단일 키로 접근

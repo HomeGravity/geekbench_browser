@@ -4,19 +4,34 @@ import asyncio
 
 import json
 import time
+from pprint import pprint
 
 # JSON 파일로 저장하는 함수
 def save_json_to_file(data, filename):
     with open(filename, 'w', encoding='utf-8') as json_file:
-        json.dump(data, json_file, ensure_ascii=False, indent=4)  # JSON으로 변환하여 파일에 저장
+        json.dump(data, json_file, ensure_ascii=False, indent=4)
 
 async def run():
-    gb6 = GeekbenchBrowserAPI(search_target="IPhone17")
+    gb6 = GeekbenchBrowserAPI()
     # await gb6.login(id="id", passwrod="passwrod")
     
-    # 하나의 객체는 하나의 검색어만 수집할 수 있게 설계되었습니다.
-    # 만약에 2개 이상의 검색어를 사용하실 경우 객체도 포함해서 반복시켜야 합니다.
-    # 그래야만 결과가 정상적으로 반환됩니다.
+    # for search in ["sm-s918n", "sm-s928n"]: 
+    #     gb6.search_target(search_target=search)
+        
+    #     await asyncio.gather(
+    #         gb6.cpu_search_fetch(
+    #             start_page=1,
+    #             end_page=10,
+    #             delay=2
+    #         ),
+    #         gb6.cpu_search_fetch(
+    #             start_page=11,
+    #             end_page=20,
+    #             delay=2
+    #         )
+    #     )
+    
+    # save_json_to_file(data=gb6.get_search_cpu_data(), filename="test3.json")
     
     # for search in ["sm-s928n", "sm-s918n"]:    
     #     gb6 = GeekbenchBrowserAPI(search_target=search)
@@ -41,7 +56,7 @@ async def run():
     #     await gb6.session_close()
 
     
-    total_page = 1000 
+    # total_page = 1000 
     # time_delay = 6
     # await asyncio.gather(
     # gb6.latest_cpu_fetch(start_page=1, end_page=17, delay=time_delay),
@@ -53,8 +68,8 @@ async def run():
     # )
     
     
-    total_page = 582 
-    time_delay = 8
+    total_page = 100
+    time_delay = 6
     num_tasks = 6  # 작업 수
 
     # 각 작업에 균등하게 페이지 할당
@@ -69,14 +84,14 @@ async def run():
         if i == num_tasks - 1:  # 마지막 작업
             end_page += remaining_pages  # 남은 페이지 추가
         
-        tasks.append(gb6.cpu_search_fetch(start_page=start_page, end_page=end_page, delay=time_delay))
+        tasks.append(gb6.latest_cpu_fetch(start_page=start_page, end_page=end_page, delay=time_delay))
 
 
     # 비동기 작업 실행
     await asyncio.gather(*tasks)
 
     
-    save_json_to_file(data=gb6.get_search_cpu_data(), filename="IPhone17.json")
+    save_json_to_file(data=gb6.get_latest_cpu_data(), filename="test1.json")
     
     
     # time_delay = 6
@@ -94,11 +109,11 @@ async def run():
     
     # 병렬로 여러 요청을 수행
     # android, vulkan = await asyncio.gather(
-    #     gb6.android_chart_json_fetch_and_get(),
+    #     gb6.android_chart_json_fetch_and_get_data(),
     #     gb6.vulkan_chart_json_fetch_and_get_data()
     # )
     
-    # print(android)
+    # print(type(android))
     # print(vulkan)
     
     # await gb6.gpu_details_fetch(urls=["https://browser.geekbench.com/v6/compute/2698404"], delay=2, login_status=False)

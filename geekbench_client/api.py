@@ -7,7 +7,7 @@ from .utils import *
 
 
 class GeekbenchBrowserAPI():
-    def __init__(self, search_target:str) -> None:
+    def __init__(self) -> None:
         # 요청 데이터를 초기화 합니다.
         self._initialize_fetch_data()
         
@@ -16,8 +16,6 @@ class GeekbenchBrowserAPI():
         # 파싱 객체 초기화
         self._parser = Parser()
         
-        self._search_target = search_target # 하나의 객체는 하나의 검색어만 수집할 수 있도록 합니다.
-    
     
     # 요청 데이터 초기화
     def _initialize_fetch_data(self):
@@ -67,6 +65,10 @@ class GeekbenchBrowserAPI():
             "Upgrade-Insecure-Requests": "1",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         }
+        
+    
+    def search_target(self, search_target: str) -> None:
+        self._search_target = search_target
     
     
     # 로그인
@@ -149,14 +151,18 @@ class GeekbenchBrowserAPI():
 
                 text = await response.text(encoding="utf-8")
                 result = parser(
+                    search_target=search_target,
                     html=text, 
-                    page=payload["page"]
-                    )
+                    page=page
+                    ) if search_target is not None else parser(
+                        html=text,
+                        page=page
+                        )
                 
                 # debug
                 # 남은 시간 계산
                 remaining_time = total_time_seconds - page * delay
-                print(f"search: {payload["q"]} - type: {type} - | start page: {start_page} - current page: {payload["page"]} - end page: {end_page} | remaining time: {remaining_time}s") if not payload_change else print(f"type: {type} - | start page: {start_page} - current page: {payload["page"]} - end page: {end_page} | remaining time: {remaining_time}s")
+                print(f"search: {search_target} - type: {type} - | start page: {start_page} - current page: {page} - end page: {end_page} | remaining time: {remaining_time}s") if not payload_change else print(f"type: {type} - | start page: {start_page} - current page: {page} - end page: {end_page} | remaining time: {remaining_time}s")
 
                 
                 if check_for_last_page(text):
@@ -286,6 +292,19 @@ class GeekbenchBrowserAPI():
             )
     
     
+    # url 대신 search로 상세한 정보 데이터를 수집합니다.
+    # 후에 ?_details_fetch 메소드와 병합할 생각
+    async def cpu_search_details_fetch(self):
+        pass
+    
+    async def gpu_search_details_fetch(self):
+        pass
+    
+    async def ai_search_details_fetch(self):
+        pass
+    
+    
+    # url로 상세한 정보 데이터를 수집합니다.
     # CPU 상세한 정보
     async def cpu_details_fetch(self, urls:Union[list, tuple], delay:float=3, login_status:bool=False):
         await self._details_fetch(
@@ -458,15 +477,15 @@ class GeekbenchBrowserAPI():
 
     # 단일 데이터 반환 - CPU
     def get_search_cpu_data(self):
-        return self._parser.emit_data(access_keys=["search", "cpu"])
+        return self._parser.emit_data(search_target=True, access_keys=["search", "cpu"])
     
     # 단일 데이터 반환 - GPU
     def get_search_gpu_data(self):
-        return self._parser.emit_data(access_keys=["search", "gpu"])
+        return self._parser.emit_data(search_target=True, access_keys=["search", "gpu"])
     
     # 단일 데이터 반환 - AI
     def get_search_ai_data(self):
-        return self._parser.emit_data(access_keys=["search", "ai"])
+        return self._parser.emit_data(search_target=True, access_keys=["search", "ai"])
     
     # 단일 데이터 반환 - CPU DETAILS
     def get_details_cpu_data(self, login_status=False):
