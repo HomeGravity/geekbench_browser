@@ -126,9 +126,6 @@ class GeekbenchBrowserAPI():
         ) -> dict:
         
         
-        # 총 소요 시간 계산
-        total_time_seconds =  end_page * delay
-        
         # start_page 가 end_page 까지 반복.
         for page in range(start_page, end_page + 1):
             # 페이로드 작성
@@ -160,9 +157,7 @@ class GeekbenchBrowserAPI():
                         )
                 
                 # debug
-                # 남은 시간 계산
-                remaining_time = total_time_seconds - page * delay
-                print(f"search: {search_target} - type: {type} - | start page: {start_page} - current page: {page} - end page: {end_page} | remaining time: {remaining_time}s") if not payload_change else print(f"type: {type} - | start page: {start_page} - current page: {page} - end page: {end_page} | remaining time: {remaining_time}s")
+                print(f"search: {search_target} - type: {type} - | start page: {start_page} - current page: {page} - end page: {end_page}") if not payload_change else print(f"type: {type} - | start page: {start_page} - current page: {page} - end page: {end_page}")
 
                 
                 if check_for_last_page(text):
@@ -193,9 +188,6 @@ class GeekbenchBrowserAPI():
         # 링크 총합 계산
         total_handling = len(urls)
         
-        # 총 소요 시간 계산
-        total_time_seconds = total_handling * delay
-        
         for handling, url in enumerate(urls, start=1):
             if type in url:
                 # 로그인 상태가 True이면 *.gb6으로 접속하여 데이터를 수집함.
@@ -213,10 +205,8 @@ class GeekbenchBrowserAPI():
                         response.raise_for_status()
                         parser(url=url, html=await response.text(encoding="utf-8"), login_status=login_status)
                 
-                # debug
-                # 남은 시간 계산
-                remaining_time = total_time_seconds - handling * delay            
-                print(f"type: details {type.replace("compute", "gpu")} | handling: {handling} - total handling: {total_handling} | remaining time: {remaining_time}s")
+                # debug         
+                print(f"type: details {type.replace("compute", "gpu")} | handling: {handling} - total handling: {total_handling}")
                 
                 # 마지막 링크는 비동기 대기 적용안함.
                 if handling < total_handling:
